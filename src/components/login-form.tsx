@@ -23,8 +23,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     try{
       const result = await signIn("credentials", {
         redirect: false,
-        email: (e.currentTarget as any).email.value,
-        password: (e.currentTarget as any).password.value
+        email: (e.currentTarget as HTMLFormElement).email.value,
+        password: (e.currentTarget as HTMLFormElement).password.value
       })
 
       if (result?.error) {
@@ -84,7 +84,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               </div>
             </form>
             <div className="text-center text-sm p-4">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <SignupModal />
             </div>
           </div>

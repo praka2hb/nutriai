@@ -25,9 +25,14 @@ export async function POST(req: NextRequest) {
             message: "Metadata created successfully",
         }, { status: 201 });
     } 
-    catch(error: any){
+    catch(error: Error | unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Unknown error occurred";
+          
         return NextResponse.json({
-            message: "Failed to create metadata"
-        }, {status: 402})
-    }
+          message: "Failed to Add metadata",
+          error: errorMessage
+        }, {status: 500}); // Use 500 for server errors instead of 402 (payment required)
+      }
 }

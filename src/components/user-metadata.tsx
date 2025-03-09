@@ -63,7 +63,7 @@ export function UserMetadataForm({ formData, updateFormData, onNext }: UserMetad
     <Card>
       <CardHeader>
         <CardTitle className="text-zinc-800">Personal Information</CardTitle>
-        <CardDescription>Let's start with some basic information about you</CardDescription>
+        <CardDescription>Let&apos;s start with some basic information about you</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4 text-zinc-800">

@@ -24,10 +24,14 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ message: "User logged in successfully" }, { status: 200 });
     }
-    catch(error: any){
+    catch(error: Error | unknown) {
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : "Unknown error occurred";
+            
         return NextResponse.json({
-            message: "User Failed to login",
-            error: error.message
-        }, { status: 200 });   
+            message: "Failed to Login User",
+            error: errorMessage
+        }, {status: 500}); 
     }
 }

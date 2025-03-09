@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation"
 import { useState, FormEvent } from "react"
 import { toast } from "sonner"
 import axios from "axios"
+import { FormData } from "@/app/(nutri)/home/page"
 
 // Define proper TypeScript interfaces
 interface NutriBotProps {
   hasMealData: boolean
-  userMetadata: any
+  userMetadata: FormData | null
   hasProfile: boolean
   userId: string
 }
@@ -21,7 +22,6 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [duration, setDuration] = useState<string>()
   const [loading, setLoading] = useState(false)
-  const [plan, setPlan] = useState<any>({})
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -51,9 +51,10 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
           planDuration: duration,
           userId: userId
         })
-        setPlan(res.data)
-        toast.success("Plan generated successfully")
-        router.push('/meal-plan')
+        if(res.status === 200 || res.status === 201) {
+          toast.success("Plan generated successfully")
+          router.push('/meal-plan')
+        }
       } catch (error) {
         toast.error("Failed to generate plan")
         console.error(error)
@@ -156,7 +157,6 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
             )}
           </div>
         </form>
-        {JSON.stringify(plan.mealPlan)}
       </div>
     </div>
   )

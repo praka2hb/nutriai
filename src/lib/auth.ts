@@ -34,8 +34,13 @@ export const authOption: NextAuthOptions = {
             name: user.name,
             email: user.email
           };
-        } catch (error: any) {
-          throw new Error(error.message);
+        }
+        catch (error: Error | unknown) {
+          if (error instanceof Error) {
+            throw new Error(error.message);
+          } else {
+            throw new Error("An unexpected error occurred during authentication");
+          }
         }
       }
     }),

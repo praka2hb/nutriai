@@ -2,10 +2,12 @@ import { connectToDatabase } from "@/lib/db";
 import Metadata from "@/models/Metadata";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
     await connectToDatabase()   
     try {
-        const { userId } = await params
+        const resolvedParams = await Promise.resolve(params)
+        const { userId } =  resolvedParams
+
         const userMeta = await Metadata.findOne({
             userId: userId
         }).select({
@@ -28,10 +30,12 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
     }
 }
 
-export async function PUT(req: NextRequest, {params}: {params : {userId : string}}) {
+export async function PUT(req: NextRequest, {params}: { params: Promise<{ userId: string }> }) {
     try{
         await connectToDatabase()
-        const { userId } = await params
+
+        const resolvedParams =  await Promise.resolve(params)
+        const { userId } = resolvedParams
         const { age, weight, height, gender, fitnessGoal, allergies, activities, activityLevel, mealsPerDay, dietaryPreferences } = await req.json()
 
         const res = await Metadata.findOneAndUpdate({
@@ -60,9 +64,14 @@ export async function PUT(req: NextRequest, {params}: {params : {userId : string
         }, { status: 201 });
 
     }
-    catch(error: any){
+    catch(error: Error | unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Unknown error occurred";
+          
         return NextResponse.json({
-            message: "Failed to update metadata"
-        }, {status: 402})
-    }
+          message: "Failed to update metadata",
+          error: errorMessage
+        }, {status: 500});
+      }
 }

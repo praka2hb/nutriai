@@ -29,10 +29,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "User Registered successfully" }, { status: 200 });
         
     }
-    catch(error: any){
+    catch(error: Error | unknown) {
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : "Unknown error occurred";
+            
         return NextResponse.json({
-            message: "User Failed to Register",
-            error: error.message
-        }, { status: 402 });   
+            message: "Failed to Register User",
+            error: errorMessage
+        }, {status: 500}); 
     }
 }

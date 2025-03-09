@@ -18,10 +18,14 @@ export async function POST(req: Request) {
             message: "Meal Plan created successfully",
         }, { status: 201 });
     }
-    catch(error: any){
+    catch(error: Error | unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Unknown error occurred";
+          
         return NextResponse.json({
-            message: "Failed to create meal plan",
-            error: error.message
-        }, {status: 402})
-    }
+          message: "Failed to Create Meal Plan",
+          error: errorMessage
+        }, {status: 500});
+      }
 }

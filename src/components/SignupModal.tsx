@@ -49,11 +49,17 @@ export default function SignupModal() {
         setError(true)
         setMessage( res.data.message || "Sign-up failed")
       }
-    } catch (err: any) {
-      setError(true)
-      setMessage(
-        err?.response?.data?.message || err?.message || "An error occurred",
-      )
+    } catch (err: unknown) {
+      setError(true);
+      if (axios.isAxiosError(err)) {
+        setMessage(
+          err.response?.data?.message || err.message || "An error occurred during registration"
+        );
+      } else if (err instanceof Error) {
+        setMessage(err.message || "An unexpected error occurred");
+      } else {
+        setMessage("An unknown error occurred");
+      }
     } finally {
       setIsLoading(false)
     }
