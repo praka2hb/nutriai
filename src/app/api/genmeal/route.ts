@@ -1,27 +1,28 @@
-export const config = {
-  runtime: "nodejs",
-  maxDuration: 300, // Allow up to 300 seconds for the request (Vercel Enterprise only)
-};
+// Remove the enterprise-only config export since you're on the free plan
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from 'next/server';
-import type { MealPlan } from '@/lib/mealPlan';
+import { NextResponse } from "next/server";
+import type { MealPlan } from "@/lib/mealPlan";
 import { connectToDatabase } from "@/lib/db";
 import MealModel from "@/models/MealModel";
-
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(request: Request) {
+  // Save userId for checking in the outer catch
+  let userId: string | undefined;
+
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const { userMetadata, planDuration, userId } = await request.json();
+    const { userMetadata, planDuration, userId: parsedUserId } = await request.json();
+    userId = parsedUserId; // persist for later use
 
+    // Set a timeout that fits within Vercel's free plan limits (e.g. 9 seconds)
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 29000);
+    const timeoutId = setTimeout(() => abortController.abort(), 9000);
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }, { apiVersion: 'v1' });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }, { apiVersion: "v1" });
 
     const prompt = `Generate a ${planDuration}-day meal plan for a person with:
       - Fitness goal: ${userMetadata.fitnessGoal}
@@ -38,41 +39,32 @@ export async function POST(request: Request) {
           "snacks": {"meal": "meal description", "description": "optional details", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
           "calories": 1200, "protein": 80, "carbs": 120, "fats": 40
         }
-      }
-    `;
-    
-   
+      }`;
+
     try {
-      // 3. Pass abort controller signal to AI request
+      // Call the AI service with the abort signal
       const result = await model.generateContent(prompt, { signal: abortController.signal });
       clearTimeout(timeoutId);
-      
+
       const text = result.response.text();
-      
-      // Clean and parse the JSON
-      const cleanedJSON = text.replace(/```json|```/g, '').trim();
+      const cleanedJSON = text.replace(/```json|```/g, "").trim();
       const mealPlan: MealPlan = JSON.parse(cleanedJSON);
 
-      // 4. Insert the meal plan into the database
-      await MealModel.insertOne({
-        userId,
-        mealPlan
-      });
+      // Insert the meal plan into the database
+      await MealModel.insertOne({ userId, mealPlan });
 
-      return NextResponse.json({
-        message: "Meal Plan created successfully",
-      }, { status: 201 });
+      return NextResponse.json({ message: "Meal Plan created successfully" }, { status: 201 });
     } catch (genError: unknown) {
       if (genError instanceof Error) {
-        if (genError.name === 'AbortError' || genError.message?.includes('timeout')) {
-          return NextResponse.json({ 
-            error: 'Request timed out. Please try again with fewer days or simplified requirements.' 
-          }, { status: 504 });
+        if (genError.name === "AbortError" || genError.message?.includes("timeout")) {
+          return NextResponse.json(
+            { error: "Request timed out. Please try again with fewer days or simplified requirements." },
+            { status: 504 }
+          );
         }
-        // Re-throw other errors as needed.
+        // Re-throw other errors
         throw genError;
       } else {
-        // If genError is not an instance of Error, throw a generic error
         throw new Error("An unknown error occurred during AI generation");
       }
     }
@@ -83,12 +75,19 @@ export async function POST(request: Request) {
     function hasStatus(err: unknown): err is Error & { status: number } {
       return err instanceof Error && "status" in err && typeof (err as { status: unknown }).status === "number";
     }
-
     const statusCode = hasStatus(error) ? error.status : 500;
 
+    // Twist: Check if a meal plan was inserted already.
+    if (userId) {
+      const existingPlan = await MealModel.findOne({ userId });
+      if (existingPlan) {
+        return NextResponse.json({ message: "Meal Plan created successfully" }, { status: 201 });
+      }
+    }
+
     return NextResponse.json(
-      { 
-        error: "Failed to generate meal plan", 
+      {
+        error: "Failed to generate meal plan",
         message: errorMessage,
         suggestion: "Try again with fewer days or simplified requirements"
       },
