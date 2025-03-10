@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const { userMetadata, planDuration, userId } = await request.json();
 
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 15000);
+    const timeoutId = setTimeout(() => abortController.abort(), 29000);
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }, { apiVersion: 'v1' });
 
