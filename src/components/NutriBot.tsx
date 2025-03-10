@@ -56,7 +56,9 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
           router.push('/meal-plan')
         }
       } catch (error) {
-        toast.error("Failed to generate plan")
+        toast.error("Failed to generate plan",{
+          description: "Try Generating the plan with fewer days"
+        })
         console.error(error)
       } finally {
         setLoading(false)
