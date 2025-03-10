@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
     const { userMetadata, planDuration, userId } = await request.json();
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }, { apiVersion: 'v1' });
 
     const prompt = `Generate a ${planDuration} meal plan based on the following:
       User Metadata: ${JSON.stringify(userMetadata)}

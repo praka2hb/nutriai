@@ -12,12 +12,15 @@ import { useRouter } from "next/navigation"
 import Link from "next/link";
 import QuitButtonWithModal from "@/components/QuitandModal";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 export default function MealPlanPage() {
   const [activeDay, setActiveDay] = useState("day1")
   const { data: session, status } = useSession()
   const userId = session?.user?.id
   const [hasData, setHasData] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   interface DayMeals {
@@ -55,6 +58,9 @@ export default function MealPlanPage() {
     }
     
     if (!userId) return
+
+    setIsLoading(true)
+    setError(null)
     
     axios.get(`/api/mealplan/${userId}`)
       .then(res => {
@@ -64,6 +70,19 @@ export default function MealPlanPage() {
             setHasData(true)
           }
         }
+      })
+      .catch(err => {
+        if (err.code === 'ECONNABORTED' || err.response?.status === 504) {
+          setError("The request took too long to complete. Please try again later.")
+        } else if (err.response?.status === 404) {
+          setError("No meal plan found for your account.")
+        } else {
+          setError("An error occurred while fetching your meal plan.")
+          console.error("Meal plan fetch error:", err)
+        }
+      })
+      .finally(() => {
+        setIsLoading(false)
       })
   }, [session, userId, router, status])
 
@@ -128,7 +147,28 @@ export default function MealPlanPage() {
         </div>
       </h1>
       
-      {hasData && mealPlanData && currentDay ? (
+      {isLoading ? (
+      <div className="flex flex-col space-y-4 justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-700"></div>
+        <p className="text-sm text-neutral-500">Loading your meal plan...</p>
+      </div>
+    ) : error ? (
+      <div className="flex flex-col space-y-2 justify-center items-center h-96">
+        <ErrorOutlineIcon fontSize="large" className="text-neutral-500" />
+        <p className="text-sm text-neutral-500">{error}</p>
+        <Button
+          onClick={() => window.location.reload()}
+          variant="outline" 
+          className="mt-4 bg-gradient-to-b from-zinc-700 to-zinc-500 hover:opacity-95"
+        >
+          Try Again
+        </Button>
+        <Link href="/home" className="text-sm text-blue-500 hover:underline mt-2">
+          Return to Home
+        </Link>
+      </div>
+      ) :
+      hasData && mealPlanData && currentDay ? (
         <Tabs defaultValue="day1" value={activeDay} onValueChange={setActiveDay} className="w-full">
           <TabsList className={`grid ${getGridColsClass(Object.keys(mealPlanData).length)} mb-8`}>
             {mealPlanData && Object.keys(mealPlanData).map((day) => (
