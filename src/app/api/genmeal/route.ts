@@ -1,3 +1,8 @@
+export const config = {
+  runtime: "nodejs",
+  maxDuration: 300, // Allow up to 300 seconds for the request (Vercel Enterprise only)
+};
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from 'next/server';
 import type { MealPlan } from '@/lib/mealPlan';
