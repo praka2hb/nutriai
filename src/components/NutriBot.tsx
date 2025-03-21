@@ -70,7 +70,7 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
 
   return (
     <div className="container">
-      <div className="relative mr-40 p-4 rounded-xl border bg-card text-card-foreground shadow-sm">
+      <div className="mx-auto p-4 ml-20 mr-20 rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-transparent bg-gradient-to-r from-neutral-700 to-neutral-300 bg-clip-text ">
             Your Personal AI Nutrition Guide

@@ -24,6 +24,8 @@ export async function POST(request: Request) {
       - Allergies: ${JSON.stringify(userMetadata.allergies || [])}
       - Activity level: ${userMetadata.activityLevel}
       - Dietary preferences: ${JSON.stringify(userMetadata.dietaryPreferences || [])}
+      - Focus on Indian cuisine
+
 
       Return ONLY a JSON object with no comments or formatting:
       {
