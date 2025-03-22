@@ -30,10 +30,10 @@ export async function POST(request: Request) {
       Return ONLY a JSON object with no comments or formatting:
       {
         "day1": {
-          "breakfast": {"meal": "meal description", "description": "optional details", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
-          "lunch": {"meal": "meal description", "description": "optional details", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
-          "dinner": {"meal": "meal description", "description": "optional details", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
-          "snacks": {"meal": "meal description", "description": "optional details", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
+          "breakfast": {"meal": "meal description", "description": "Include approximate quantities or weights of foods in grams or cups", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
+          "lunch": {"meal": "meal description", "description": "Include approximate quantities or weights of foods in grams or cups", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
+          "dinner": {"meal": "meal description", "description": "Include approximate quantities or weights of foods in grams or cups", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
+          "snacks": {"meal": "meal description", "description": "Include approximate quantities or weights of foods in grams or cups", "calories": 300, "protein": 20, "carbs": 30, "fats": 10},
           "calories": 1200, "protein": 80, "carbs": 120, "fats": 40
         }
       }`;
