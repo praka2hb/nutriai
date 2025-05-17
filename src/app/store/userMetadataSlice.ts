@@ -6,6 +6,10 @@ export interface UserMetadata {
   // Define your user metadata fields here
   userId: string
   fitnessGoal: string
+  age: string
+  height: string
+  weight: string
+  gender: string
   allergies: string[]
   activityLevel: string
   dietaryPreferences: string[]

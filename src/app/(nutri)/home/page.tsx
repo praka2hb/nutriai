@@ -38,7 +38,15 @@ export default function Home() {
   const loading = userMetadataStatus === 'loading' || mealPlanStatus === 'loading'
   
   // Derived states
-  const hasProfile = !!userMetadata
+  // More robust profile completion check
+  const hasProfile = 
+  !!userMetadata && 
+  !!userMetadata?.age && 
+  !!userMetadata?.height && 
+  !!userMetadata?.weight && 
+  !!userMetadata?.fitnessGoal && 
+  !!userMetadata?.activityLevel && 
+  !!userMetadata?.gender;
   const hasMealData = !!mealPlan
 
   useEffect(() => {
@@ -55,6 +63,9 @@ export default function Home() {
     dispatch(fetchUserMetadata(userId))
     dispatch(fetchMealPlan(userId))
   }, [status, userId, router, dispatch])
+
+  console.log('HAs Profile', hasProfile);
+  
 
   if (loading && status !== "loading") {
     return (
