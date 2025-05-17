@@ -1,7 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import axios from "axios"
+import { useEffect } from "react"
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchUserMetadata } from '@/app/store/userMetadataSlice'
+import { fetchMealPlan } from '@/app/store/mealPlanSlice'
+import { RootState, AppDispatch } from '@/app/store'
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import NutriBot from "@/components/NutriBot"
@@ -23,12 +26,21 @@ export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const userId = session?.user?.id
+  const dispatch = useDispatch<AppDispatch>()
+  
+  // Get data from Redux store
+  const userMetadata = useSelector((state: RootState) => state.userMetadata.data)
+  const userMetadataStatus = useSelector((state: RootState) => state.userMetadata.status)
+  const mealPlan = useSelector((state: RootState) => state.mealPlan.data)
+  const mealPlanStatus = useSelector((state: RootState) => state.mealPlan.status)
 
-  const [userMetadata, setUserMetadata] = useState<FormData | null>(null)
+  // Loading state based on Redux status
+  const loading = userMetadataStatus === 'loading' || mealPlanStatus === 'loading'
+  
+  // Derived states
+  const hasProfile = !!userMetadata
+  const hasMealData = !!mealPlan
 
-  const [loading, setLoading] = useState(true)
-  const [hasMealData, setHasMealData] = useState(false)
-  const [hasProfile, setHasProfile] = useState(false)
   useEffect(() => {
     if (status === "loading") return
     
@@ -39,39 +51,12 @@ export default function Home() {
   
     if (!userId) return
 
-    setLoading(true)
-    
-    axios.get(`/api/mealplan/${userId}`)
-      .then(res => {
-        if (res.status === 200 || res.status === 201) {
-          if (res.data?.mealPlan?.[0]) {
-            setHasMealData(true)
-          }
-        }
-      })
-      .catch(()=>{
-        setHasMealData(false)
-      })
-      .finally(()=>{
-        setLoading(false)
-      })
-    
-    axios.get(`/api/user-meta/${userId}`)
-      .then(res => {
-        if (res.status === 201) {
-          setHasProfile(true)
-          setUserMetadata(res.data)
-        }
-      })
-      .catch(() => {
-        setHasProfile(false)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [status, session, router, userId])
+    // Fetch data using Redux actions
+    dispatch(fetchUserMetadata(userId))
+    dispatch(fetchMealPlan(userId))
+  }, [status, userId, router, dispatch])
 
-
+  console.log("User metadata from Redux:", userMetadata);
 
   if (loading && status !== "loading") {
     return (
@@ -89,7 +74,12 @@ export default function Home() {
       <div className="">
       {userId && (
         <div>
-          <NutriBot hasMealData={hasMealData} userMetadata={userMetadata} hasProfile={hasProfile} userId= {userId} />
+          <NutriBot 
+            hasMealData={hasMealData} 
+            userMetadata={userMetadata as unknown as FormData} 
+            hasProfile={hasProfile} 
+            userId={userId} 
+          />
         </div>
       )}
       </div>

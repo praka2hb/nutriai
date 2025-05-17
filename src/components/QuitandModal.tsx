@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useDispatch } from "react-redux"
+import { clearMealPlan } from "@/app/store/mealPlanSlice"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,11 +20,13 @@ import { useRouter } from "next/navigation"
 export default function QuitButtonWithModal({userId}: {userId: string}) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const dispatch = useDispatch()
 
   const handleQuit = async (userId: string) => {
     const res = await axios.delete(`/api/mealplan/${userId}`)
     if (res.status === 200 || res.status === 201) {
       setIsOpen(false)
+      dispatch(clearMealPlan())
       toast.success(res.data.message,{
         description: "You can get a fresh, customized meal plan anytime—just say the word!",
       })
