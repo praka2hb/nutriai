@@ -26,6 +26,19 @@ export interface MealPlanType {
   [day: string]: DayPlan
 }
 
+export type userMetadataData = {
+    age: string
+    height: string
+    weight: string
+    gender: string
+    fitnessGoal: string
+    allergies: string
+    activities: string[]
+    activityLevel: string
+    mealsPerDay: string
+    dietaryPreferences: string[]
+  }
+
 interface MealPlanState {
   data: MealPlanType | null
   status: 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -60,7 +73,7 @@ export const regenerateMeal = createAsyncThunk(
   'mealPlan/regenerateMeal',
   async ({ userId, userMetadata, day, mealType }: {
     userId: string,
-    userMetadata: any,
+    userMetadata: userMetadataData,
     day: string,
     mealType: string
   }) => {

@@ -56,8 +56,6 @@ export default function Home() {
     dispatch(fetchMealPlan(userId))
   }, [status, userId, router, dispatch])
 
-  console.log("User metadata from Redux:", userMetadata);
-
   if (loading && status !== "loading") {
     return (
       <div className="container mx-auto py-20 flex justify-center">
