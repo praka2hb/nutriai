@@ -191,7 +191,7 @@ export default function HomePage() {
           let dailyConsumedProtein = 0;
           let dailyConsumedCarbs = 0;
           let dailyConsumedFats = 0;
-
+          
           if (currentMealPlan && planStartDate) {
             const todayDate = new Date();
             const diffTime = todayDate.getTime() - planStartDate.getTime();
@@ -402,16 +402,16 @@ export default function HomePage() {
               ) : (
                 <>
                   {!showNutriBot ? (
-                    <div className="text-center py-6">
-                      <div className="bg-neutral-100 p-4 rounded-full inline-block mb-4">
-                        <Pizza className="h-8 w-8 text-neutral-400" />
-                      </div>
-                      <h3 className="font-medium mb-1">No Meal Plan Found</h3>
-                      <p className="text-sm text-neutral-500 mb-4">
-                        Create a meal plan to get started with your nutrition journey
-                      </p>
+                <div className="text-center py-6">
+                  <div className="bg-neutral-100 p-4 rounded-full inline-block mb-4">
+                    <Pizza className="h-8 w-8 text-neutral-400" />
+                  </div>
+                  <h3 className="font-medium mb-1">No Meal Plan Found</h3>
+                  <p className="text-sm text-neutral-500 mb-4">
+                    Create a meal plan to get started with your nutrition journey
+                  </p>
                       <Button onClick={() => setShowNutriBot(true)}>Create Meal Plan</Button>
-                    </div>
+                </div>
                   ) : (
                     <NutriBot 
                       hasMealData={false} 

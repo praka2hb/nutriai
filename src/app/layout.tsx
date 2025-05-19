@@ -3,10 +3,10 @@ import './globals.css';
 import { Providers } from '@/components/Provider';
 
 export const metadata: Metadata = {
-  title: 'Nutri AI',
+  title: 'FuelBlitz',
   description: 'AI-powered nutrition planning app',
   icons: {
-    icon:"/leafarc.ico",
+    icon:"/flame.ico",
   }
 };
 

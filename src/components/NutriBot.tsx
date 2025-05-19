@@ -84,16 +84,7 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
     <div className="container">
       <div className="mx-auto p-4 max-w-5xl rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-transparent bg-gradient-to-r from-neutral-700 to-neutral-300 bg-clip-text ">
-            Your Personal AI Nutrition Guide
-          </h2>
-          <p className="text-sm text-transparent bg-gradient-to-r from-neutral-700 to-neutral-500 bg-clip-text">
-            Get personalized meal plans, nutrition advice, and dietary recommendations tailored to your specific
-            needs and health goals.
-          </p>
-
           <div className="bg-zinc-100 p-4 rounded-lg mb-6">
-            <h3 className="font-medium text-zinc-800 mb-2">What NutriAI can do for you:</h3>
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
                 <div className="h-5 w-5 rounded-full bg-green-200 flex items-center justify-center mt-0.5">

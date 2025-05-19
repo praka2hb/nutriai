@@ -176,6 +176,33 @@ export default function MealPlanPage() {
     return null;
   };
 
+  const ErrorDisplay = ({ error, onRetry }: { error: string, onRetry: () => void }) => (
+    <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
+      <ErrorOutlineIcon style={{ fontSize: 60, color: '#ef4444' }} />
+      <h2 className="mt-4 text-xl sm:text-2xl font-semibold text-neutral-700">Oops! Something went wrong.</h2>
+      <p className="mt-2 text-sm sm:text-base text-neutral-500">{error}</p>
+      <Button onClick={onRetry} className="mt-6">
+        Try Again
+      </Button>
+      <Link href="/home" className="mt-4">
+        <Button variant="outline">Create a New Plan</Button>
+      </Link>
+    </div>
+  );
+
+  const EmptyMealPlanState = () => (
+    <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
+      <Image src="/no-plan-fallback.png" alt="No Meal Plan" width={150} height={150} className="mb-6 sm:w-[200px] sm:h-[200px]" />
+      <h2 className="text-xl sm:text-2xl font-semibold text-neutral-700">No Meal Plan Found</h2>
+      <p className="mt-2 text-sm sm:text-base text-neutral-500">
+        It looks like you don&apos;t have an active meal plan yet.
+      </p>
+      <Link href="/home" className="mt-6">
+        <Button>Create Your First Meal Plan</Button>
+      </Link>
+    </div>
+  );
+
   if (status === "loading" || isLoading) {
     return <div className="flex justify-center items-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-700"></div></div>;
   }
@@ -198,7 +225,43 @@ export default function MealPlanPage() {
   };
 
   if (error && !hasData) {
-    return <ErrorDisplay error={error} onRetry={() => router.refresh()} />;
+    const fetchData = () => {
+        if (!userId) return;
+        setIsLoading(true);
+        setError(null);
+        axios.get<{ mealPlan: MealPlanType[], startDate?: string, expiryDate?: string }>(`/api/mealplan/${userId}`)
+          .then(res => {
+            if (res.status === 200 || res.status === 201) {
+              if (res.data?.mealPlan?.[0]) {
+                setMealPlanData(res.data.mealPlan[0])
+                setHasData(true)
+                if (res.data.startDate) { setStartDate(new Date(res.data.startDate)) }
+                if (res.data.expiryDate) { setExpiryDate(new Date(res.data.expiryDate)) }
+                const firstDay = Object.keys(res.data.mealPlan[0])[0];
+                if (firstDay) { setActiveDay(firstDay); }
+              } else {
+                setHasData(false);
+              }
+            } else {
+               setHasData(false);
+            }
+          })
+          .catch(err => {
+            if (err.code === 'ECONNABORTED' || err.response?.status === 504) {
+              setError("The request took too long to complete. Please try again later.")
+            } else if (err.response?.status === 404) {
+              setHasData(false);
+            } else {
+              setError("An error occurred while fetching your meal plan.")
+              console.error("Meal plan fetch error:", err)
+            }
+          })
+          .finally(() => {
+            setIsLoading(false)
+          });
+        loadTrackingData();
+    };
+    return <ErrorDisplay error={error} onRetry={fetchData} />;
   }
   
   if (!isLoading && !hasData && !error) {
@@ -206,9 +269,9 @@ export default function MealPlanPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 bg-gradient-to-b from-white to-neutral-50 min-h-screen">
+    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-neutral-50 min-h-screen">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-neutral-800 to-neutral-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-neutral-800 to-neutral-600 bg-clip-text text-transparent">
           {mealPlanData ? (`${Object.keys(mealPlanData).length} Day Meal Plan`) : "Meal Plan"}
         </h1>
         
@@ -219,9 +282,9 @@ export default function MealPlanPage() {
           </p>
         )}
         
-        <div className="flex justify-between items-center mt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4 sm:gap-0">
           <Link href="/meal-tracker">
-            <Button variant="outline" size="sm" className="flex items-center gap-1.5 bg-white hover:bg-neutral-100 border-neutral-200">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto flex items-center gap-1.5 bg-white hover:bg-neutral-100 border-neutral-200">
               <ChartBar className="h-3.5 w-3.5" />
               <span>Track Progress</span>
             </Button>
@@ -242,43 +305,79 @@ export default function MealPlanPage() {
       
       {mealPlanData && Object.keys(mealPlanData).length > 0 && (
         <Tabs value={activeDay} onValueChange={setActiveDay} className="w-full">
-          <TabsList className={`grid w-full mb-6 ${
-            Object.keys(mealPlanData).length === 7 ? 'grid-cols-7' :
-            Object.keys(mealPlanData).length === 6 ? 'grid-cols-6' : 
-            Object.keys(mealPlanData).length === 5 ? 'grid-cols-5' :
-            Object.keys(mealPlanData).length === 4 ? 'grid-cols-4' :
-            Object.keys(mealPlanData).length === 3 ? 'grid-cols-3' :
-            Object.keys(mealPlanData).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
-          }`}>
-            {Object.keys(mealPlanData).map((day) => (
-              <TabsTrigger 
-                key={day} 
-                value={day} 
-                className={`capitalize text-xs sm:text-sm ${day === getCurrentDayKey() ? 
-                  'bg-neutral-800 text-white hover:bg-neutral-700 ring-2 ring-neutral-300' : ''}`}
-              >
-                {dayNames[day as keyof typeof dayNames] || day}
-                <span className="text-xs text-neutral-400 ml-1 block md:inline">({getDayDate(day)})</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="relative mb-6 sm:mb-8">
+            <div className="overflow-x-auto pb-0 hide-scrollbar border-b border-neutral-200 dark:border-neutral-700">
+              <TabsList className="inline-flex items-center justify-start space-x-0 bg-transparent p-0 w-auto min-w-full sm:min-w-[auto] sm:w-auto">
+                {Object.keys(mealPlanData).map((day) => {
+                  const isCurrentDay = day === getCurrentDayKey();
+                  return (
+                    <TabsTrigger
+                      key={day}
+                      value={day}
+                      className={`
+                        flex-shrink-0 relative px-3 py-3 sm:px-4 sm:py-3.5 transition-all duration-200 ease-in-out
+                        text-xs sm:text-sm leading-tight whitespace-nowrap border-b-2 
+                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-0
+
+                        text-neutral-500 border-transparent font-medium 
+                        hover:text-neutral-700 hover:border-neutral-300
+                        dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:border-neutral-600
+
+                        ${isCurrentDay && `
+                          data-[state=inactive]:text-sky-700 
+                          data-[state=inactive]:font-semibold 
+                          data-[state=inactive]:border-sky-500 
+                          data-[state=inactive]:bg-sky-50/60 
+                          dark:data-[state=inactive]:text-sky-300 
+                          dark:data-[state=inactive]:border-sky-400
+                          dark:data-[state=inactive]:bg-sky-500/10
+                        `}
+                        
+                        data-[state=active]:text-orange-600 
+                        data-[state=active]:border-orange-600 
+                        data-[state=active]:font-semibold
+                        data-[state=active]:bg-orange-50/50
+                        dark:data-[state=active]:text-orange-400 
+                        dark:data-[state=active]:border-orange-400
+                        dark:data-[state=active]:bg-orange-500/10
+                      `}
+                    >
+                      {dayNames[day as keyof typeof dayNames] || day} 
+                      <span className={`ml-1.5 text-[10px] sm:text-xs hidden xs:inline
+                                        ${isCurrentDay ? 
+                                          'font-medium data-[state=inactive]:text-sky-600 dark:data-[state=inactive]:text-sky-400' : 
+                                          'text-neutral-400 dark:text-neutral-500'}
+                                        
+                                        data-[state=active]:${isCurrentDay ? 
+                                          'text-orange-600 dark:text-orange-400 font-semibold' : 
+                                          'text-orange-500/90 dark:text-orange-400/90'
+                                        } 
+                                       `}>
+                        ({getDayDate(day)})
+                      </span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </div>
+          </div>
 
           {Object.keys(mealPlanData).map((day) => (
             <TabsContent key={day} value={day}>
               {currentDayPlan && day === activeDay && (
-                <Card className="overflow-hidden shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b p-4">
+                <Card className="overflow-hidden shadow-lg bg-white dark:bg-neutral-800 dark:border-neutral-700">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-neutral-700/30 dark:to-neutral-750/30 border-b dark:border-neutral-700 p-4">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                      <CardTitle className="text-xl font-semibold text-slate-700 mb-1 sm:mb-0">
+                      <CardTitle className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-neutral-200 mb-1 sm:mb-0">
                         {dayNames[activeDay as keyof typeof dayNames]} - Daily Totals
                       </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs bg-white py-1 px-2">
+                      <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                        <Badge variant="outline" className="text-xs bg-white dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600 py-1 px-2">
                           <Calendar className="h-3 w-3 mr-1" /> {getDayDate(activeDay)}
                         </Badge>
                       </div>
                     </div>
-                    <CardDescription className="text-sm text-slate-500 mt-1">
+                    <CardDescription className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1 leading-tight">
                       Calories: {currentDayPlan.calories} kcal, Protein: {currentDayPlan.protein}g, Carbs: {currentDayPlan.carbs}g, Fats: {currentDayPlan.fats}g
                     </CardDescription>
                   </CardHeader>
@@ -290,31 +389,31 @@ export default function MealPlanPage() {
                           if (!mealDetails || typeof mealDetails === 'number') return null;
                           const details = mealDetails as DayMeals;
                           const photoUrl = mealPhotos[mealType as keyof typeof mealPhotos] || "/default-meal.jpg";
-
+                            
                           return (
-                            <div key={mealType} className="border-b md:border-r p-4 group hover:bg-slate-50/70 transition-colors duration-200 ease-in-out">
+                            <div key={mealType} className="border-b md:border-r dark:border-neutral-700 p-3 sm:p-4 group hover:bg-slate-50/70 dark:hover:bg-neutral-750/50 transition-colors duration-200 ease-in-out">
                               <div className="flex items-start space-x-3 sm:space-x-4">
-                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg overflow-hidden shadow-md flex-shrink-0">
-                                  <Image 
+                                <div className="relative w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg overflow-hidden shadow-md flex-shrink-0">
+                                  <Image
                                     src={photoUrl} 
-                                    alt={mealType} 
+                                    alt={mealType}
                                     layout="fill" 
                                     objectFit="cover" 
                                     className="group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
                                 <div className="flex-grow">
-                                  <div className="flex items-center mb-1 text-slate-700 group-hover:text-slate-800">
-                                    {mealIcons[mealType as keyof typeof mealIcons] || <Utensils className="h-5 w-5" />}
-                                    <h4 className="ml-2 text-md sm:text-lg font-semibold capitalize">{mealType}</h4>
+                                  <div className="flex items-center mb-0.5 sm:mb-1 text-slate-700 dark:text-neutral-300 group-hover:text-slate-800 dark:group-hover:text-neutral-100">
+                                    {mealIcons[mealType as keyof typeof mealIcons] || <Utensils className="h-4 w-4 sm:h-5 sm:w-5" />}
+                                    <h4 className="ml-1.5 sm:ml-2 text-sm sm:text-md md:text-lg font-semibold capitalize">{mealType}</h4>
                                   </div>
-                                  <h5 className="font-medium text-sm sm:text-md text-slate-600">{details.meal}</h5>
-                                  <p className="text-xs text-slate-500 mt-1 mb-2 leading-snug line-clamp-2 sm:line-clamp-none">{details.description}</p>
-                                  <div className="flex flex-wrap gap-1.5 mt-2">
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">Cals: {details.calories}</Badge>
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">P: {details.protein}g</Badge>
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">C: {details.carbs}g</Badge>
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">F: {details.fats}g</Badge>
+                                  <h5 className="font-medium text-xs sm:text-sm md:text-md text-slate-600 dark:text-neutral-400">{details.meal}</h5>
+                                  <p className="text-xs text-slate-500 dark:text-neutral-400/80 mt-1 mb-1.5 sm:mb-2 leading-snug line-clamp-2 sm:line-clamp-3 md:line-clamp-none">{details.description}</p>
+                                  <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-1.5 sm:mt-2">
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.calories} Cals</Badge>
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.protein}g P</Badge>
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.carbs}g C</Badge>
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.fats}g F</Badge>
                                   </div>
                                 </div>
                               </div>
@@ -333,30 +432,3 @@ export default function MealPlanPage() {
     </div>
   )
 }
-
-const ErrorDisplay = ({ error, onRetry }: { error: string, onRetry: () => void }) => (
-  <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
-    <ErrorOutlineIcon style={{ fontSize: 60, color: '#ef4444' }} />
-    <h2 className="mt-4 text-2xl font-semibold text-neutral-700">Oops! Something went wrong.</h2>
-    <p className="mt-2 text-neutral-500">{error}</p>
-    <Button onClick={onRetry} className="mt-6">
-      Try Again
-    </Button>
-    <Link href="/home" className="mt-4">
-      <Button variant="outline">Create a New Plan</Button>
-    </Link>
-  </div>
-);
-
-const EmptyMealPlanState = () => (
-  <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
-    <Image src="/no-plan.svg" alt="No Meal Plan" width={200} height={200} className="mb-6" />
-    <h2 className="text-2xl font-semibold text-neutral-700">No Meal Plan Found</h2>
-    <p className="mt-2 text-neutral-500">
-      It looks like you don&apos;t have an active meal plan yet.
-    </p>
-    <Link href="/home" className="mt-6">
-      <Button>Create Your First Meal Plan</Button>
-    </Link>
-  </div>
-);

@@ -1,52 +1,47 @@
 "use client";
 
-import { cn } from "@/lib/utils"; // Assuming you have a utility for cn
+import { cn } from "@/lib/utils";
 
 const AuroraBackground = () => {
-  // Define multiple aurora blob configurations
   const auroras = [
     {
-      // Emerald-ish blob
-      positionClasses: "top-[-30%] left-[-20%] md:top-[-50%] md:left-[-30%]",
-      sizeClasses: "w-[60vw] h-[60vw] md:w-[800px] md:h-[800px]",
-      colorClasses: "bg-emerald-400/25", // Increased opacity slightly
-      blurClasses: "blur-[100px] md:blur-[180px]",
+      positionClasses: "top-[-40%] left-[-25%] md:top-[-60%] md:left-[-35%]",
+      sizeClasses: "w-[70vw] h-[70vw] md:w-[900px] md:h-[900px]",
+      colorClasses: "bg-red-500/25",
+      blurClasses: "blur-[110px] md:blur-[200px]",
       animationClass: "animate-aurora-1",
-      opacityClass: "opacity-70 md:opacity-60",
+      opacityClass: "opacity-60 md:opacity-50",
     },
     {
-      // Sky-ish blob
-      positionClasses: "bottom-[-30%] right-[-20%] md:bottom-[-50%] md:right-[-30%]",
-      sizeClasses: "w-[55vw] h-[55vw] md:w-[750px] md:h-[750px]",
-      colorClasses: "bg-sky-400/25", // Increased opacity slightly
-      blurClasses: "blur-[90px] md:blur-[170px]",
+      positionClasses: "bottom-[-40%] right-[-25%] md:bottom-[-60%] md:right-[-35%]",
+      sizeClasses: "w-[65vw] h-[65vw] md:w-[850px] md:h-[850px]",
+      colorClasses: "bg-orange-500/25",
+      blurClasses: "blur-[100px] md:blur-[190px]",
       animationClass: "animate-aurora-2",
-      opacityClass: "opacity-70 md:opacity-60",
+      opacityClass: "opacity-60 md:opacity-50",
     },
     {
-      // Pink-ish blob
-      positionClasses: "top-[10%] right-[5%] md:top-[0%] md:right-[-10%]",
-      sizeClasses: "w-[50vw] h-[50vw] md:w-[600px] md:h-[600px]",
-      colorClasses: "bg-pink-400/20", // Increased opacity slightly
-      blurClasses: "blur-[80px] md:blur-[140px]",
+      positionClasses: "top-[5%] right-[-5%] md:top-[-10%] md:right-[-15%]",
+      sizeClasses: "w-[60vw] h-[60vw] md:w-[700px] md:h-[700px]",
+      colorClasses: "bg-yellow-400/20",
+      blurClasses: "blur-[90px] md:blur-[160px]",
       animationClass: "animate-aurora-3",
-      opacityClass: "opacity-60 md:opacity-50",
+      opacityClass: "opacity-50 md:opacity-40",
     },
     {
-      // Purple-ish blob
-      positionClasses: "bottom-[5%] left-[0%] md:bottom-[-10%] md:left-[-15%]",
-      sizeClasses: "w-[50vw] h-[50vw] md:w-[650px] md:h-[650px]",
-      colorClasses: "bg-purple-400/20", // Increased opacity slightly
-      blurClasses: "blur-[80px] md:blur-[160px]",
+      positionClasses: "bottom-[0%] left-[-10%] md:bottom-[-15%] md:left-[-20%]",
+      sizeClasses: "w-[60vw] h-[60vw] md:w-[750px] md:h-[750px]",
+      colorClasses: "bg-rose-500/20",
+      blurClasses: "blur-[90px] md:blur-[180px]",
       animationClass: "animate-aurora-4",
-      opacityClass: "opacity-60 md:opacity-50",
+      opacityClass: "opacity-50 md:opacity-40",
     },
   ];
 
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]" // Ensures it's behind all interactive content
+      className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]"
     >
       {auroras.map((aurora, index) => (
         <div
@@ -66,4 +61,4 @@ const AuroraBackground = () => {
   );
 };
 
-export default AuroraBackground; 
+export default AuroraBackground;

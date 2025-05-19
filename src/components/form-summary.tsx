@@ -1,9 +1,18 @@
 import type { UserFormData } from "@/app/(nutri)/home/page" 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle, Zap, Flame, Heart, User } from "lucide-react"
 
 interface FormSummaryProps {
   formData: UserFormData
 }
+
+// Helper function to render a detail item - for consistency
+const DetailItem = ({ label, value }: { label: string; value: string | number | undefined | null }) => (
+  <div>
+    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+    <p className="text-slate-100 text-sm">{value || "N/A"}</p>
+  </div>
+);
 
 export function FormSummary({ formData }: FormSummaryProps) {
   // Helper function to get readable labels for activities
@@ -66,69 +75,67 @@ export function FormSummary({ formData }: FormSummaryProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="text-zinc-800">
-        <CardTitle >Your Fitness Profile</CardTitle>
-        <CardDescription>Thank you for completing your profile! Here&apos;s a summary of your information.</CardDescription>
+    <Card className="bg-slate-800/90 border-slate-700/80 shadow-xl text-slate-200">
+      <CardHeader className="pb-4 border-b border-slate-700/60">
+        <div className="flex items-center space-x-3">
+          <Flame className="w-8 h-8 text-orange-400" />
+          <div>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+              Your FuelBlitz Profile
+            </CardTitle>
+            <CardDescription className="text-slate-400 mt-1">
+              Awesome! Here&apos;s a summary of your high-octane profile.
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
+      <CardContent className="pt-6 px-6 md:px-8">
+        <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-medium text-zinc-800">Personal Information</h3>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p>{formData.age} years</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Gender</p>
-                <p>{formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Height</p>
-                <p>{formData.height} cm</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Weight</p>
-                <p>{formData.weight} kg</p>
-              </div>
+            <h3 className="flex items-center text-lg font-semibold text-sky-400 mb-3 border-b border-sky-400/30 pb-2">
+              <User className="w-5 h-5 mr-2" />
+              Core Stats
+            </h3>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 mt-3">
+              <DetailItem label="Age" value={`${formData.age} years`} />
+              <DetailItem label="Gender" value={formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)} />
+              <DetailItem label="Height" value={`${formData.height} cm`} />
+              <DetailItem label="Weight" value={`${formData.weight} kg`} />
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-zinc-800">Fitness Goals & Activities</h3>
-            <div className="grid grid-cols-1 gap-2 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Primary Fitness Goal</p>
-                <p>{getFitnessGoalLabel()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Preferred Activities</p>
-                <p>{getActivityLabels()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Activity Level</p>
-                <p>{getActivityLevelLabel()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Food Allergies</p>
-                <p>{formData.allergies || "None specified"}</p>
-              </div>
+            <h3 className="flex items-center text-lg font-semibold text-lime-400 mb-3 border-b border-lime-400/30 pb-2">
+              <Zap className="w-5 h-5 mr-2" />
+              Mission & Movement
+            </h3>
+            <div className="space-y-4 mt-3">
+              <DetailItem label="Primary Fitness Goal" value={getFitnessGoalLabel()} />
+              <DetailItem label="Preferred Activities" value={getActivityLabels()} />
+              <DetailItem label="Activity Level" value={getActivityLevelLabel()} />
+              <DetailItem label="Food Allergies" value={formData.allergies || "None specified"} />
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-zinc-800">Nutrition Preferences</h3>
-            <div className="grid grid-cols-1 gap-2 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Meals Per Day</p>
-                <p>{formData.mealsPerDay}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Dietary Preferences</p>
-                <p>{getDietaryLabels()}</p>
-              </div>
+            <h3 className="flex items-center text-lg font-semibold text-rose-400 mb-3 border-b border-rose-400/30 pb-2">
+              <Heart className="w-5 h-5 mr-2" />
+              Fueling Strategy
+            </h3>
+            <div className="space-y-4 mt-3">
+              <DetailItem label="Meals Per Day" value={formData.mealsPerDay} />
+              <DetailItem label="Dietary Preferences" value={getDietaryLabels()} />
             </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-700/60 text-center">
+            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+            <p className="text-slate-300 font-medium text-lg">
+              Profile Ready to Blitz!
+            </p>
+            <p className="text-sm text-slate-400 mt-1">
+              Your personalized FuelBlitz experience is about to begin.
+            </p>
           </div>
         </div>
       </CardContent>

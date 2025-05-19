@@ -13,6 +13,7 @@ import UserMetadataCard from "@/components/user-details"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserFormData } from "../home/page"
+import { Flame, Edit3, ChevronLeft, User as UserIcon, Check } from "lucide-react"
 
 export default function Profile() {
   const { data: session, status } = useSession()
@@ -47,15 +48,20 @@ export default function Profile() {
       return
     }
     
-    if (!userId) return
+    if (!userId) {
+      setLoading(false)
+      return
+    }
     
     setLoading(true)
     
     axios.get(`/api/user-meta/${userId}`)
       .then(res => {
-        if (res.status === 201) {
+        if (res.status === 201 && res.data && Object.keys(res.data).length > 1) {
           setHasProfile(true)
           setFormData(res.data)
+        } else {
+          setHasProfile(false)
         }
       })
       .catch(() => {
@@ -83,42 +89,46 @@ export default function Profile() {
   
   const cancelEdit = () => {
     setIsEditing(false)
+    if (userId && hasProfile) {
+      axios.get(`/api/user-meta/${userId}`).then(res => {
+        if (res.status === 201) setFormData(res.data)
+      })
+    }
   }
 
   const handleSubmit = async () => {
     try {
       setLoading(true)
-      if(hasProfile){
-        const res = await axios.put(`/api/user-meta/${userId}`, {
-          ...formData
-        })
-        if (res.status === 201) {
-          toast.success("Profile updated successfully",{
-            description: "Quit the current plan and try to generate a new one with the updated profile"
-          })
-          setHasProfile(true)
-          setIsEditing(false)
-        }
-      }
+      const apiEndpoint = hasProfile && isEditing ? `/api/user-meta/${userId}` : "/api/user-meta"
+      const method = hasProfile && isEditing ? axios.put : axios.post
+      const payload = hasProfile && isEditing ? { ...formData } : { ...formData, userId: userId as string }
 
-      else{
-          const res = await axios.post("/api/user-meta", {
-            ...formData,
-            userId: userId as string
-          })
+      const res = await method(apiEndpoint, payload)
         
-          if (res.status === 201) {
-            router.push("/home")
-            toast.success("Profile saved successfully",{
-              description: "Now You can generate a personalized meal plan anytime!"
-            })
-            setHasProfile(true)
-            setIsEditing(false)
-          }
+      if (res.status === 201) {
+        const successMessage = (hasProfile && isEditing) ? "Profile updated successfully!" : "Profile created successfully!"
+        toast.success(successMessage, {
+          description: (hasProfile && isEditing)
+            ? "Your FuelBlitz plan can now use your updated details."
+            : "Your FuelBlitz profile is set! Generate a plan anytime."
+        })
+        setHasProfile(true)
+        setIsEditing(false)
+        setIsComplete(false)
+        setStep(0)
+        if (!(hasProfile && isEditing)) {
+          router.push("/home")
+        } else {
+          axios.get(`/api/user-meta/${userId}`).then(profileRes => {
+            if (profileRes.status === 201) setFormData(profileRes.data)
+          })
+        }
+      } else {
+        toast.error("Failed to save profile. Please try again.")
       }
     } catch (error) {
-      console.error(error)
-      toast.error("Failed to save profile")
+      console.error("Profile submission error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -127,92 +137,111 @@ export default function Profile() {
   // Loading state
   if (loading && status !== "loading") {
     return (
-      <div className="container mx-auto py-20 flex justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-64 bg-muted rounded mb-4"></div>
-          <div className="h-4 w-48 bg-muted rounded"></div>
+      <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center text-slate-600 p-4">
+        <div className="animate-pulse flex flex-col items-center space-y-4">
+          <div className="h-10 w-72 bg-slate-300 rounded-md"></div>
+          <div className="h-6 w-56 bg-slate-300 rounded-md"></div>
+          <div className="mt-8">
+            <Flame className="w-16 h-16 text-orange-500 animate-ping opacity-75" />
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <main className="container mx-auto py-10 px-4 md:px-6">
-      <div className={`${hasProfile ? "flex justify-center": "flex justify-center"}`}>
+    <main className="min-h-screen bg-slate-100 text-slate-800 py-10 px-4 md:px-6 flex flex-col items-center">
       <div className="max-w-2xl w-full">
-       {!hasProfile && <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-b from-neutral-800 to-neutral-600 bg-clip-text text-transparent">Fitness Profile</h1>
-          <p className="text-muted-foreground mt-2">
-              Complete your profile to get personalized fitness recommendations
+       {!hasProfile && !isEditing && (
+         <div className="text-center mb-10">
+          <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-2">
+            Set Up Your FuelBlitz Profile
+          </h1>
+          <p className="text-slate-600 mt-2 text-lg">
+              Unlock personalized nutrition and crush your goals!
           </p>
-        </div>}
+        </div>
+       )}
 
         {hasProfile && !isEditing ? (
-          <Card>
-            <CardHeader className="text-zinc-800">
-              <CardTitle>Your Fitness Profile</CardTitle>
-              <CardDescription>Profile information used for your recommendations</CardDescription>
+          <Card className="bg-white border-slate-200 shadow-lg">
+            <CardHeader className="border-b border-slate-200 pb-4">
+              <div className="flex items-center space-x-3">
+                <UserIcon className="w-8 h-8 text-sky-500" />
+                <div>
+                  <CardTitle className="text-2xl font-bold text-slate-800">Your FuelBlitz Profile</CardTitle>
+                  <CardDescription className="text-slate-500">This info fuels your personalized plans.</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <UserMetadataCard userData={formData} />
-              <div className="mt-6 flex justify-end">
-                <Button onClick={startEditProfile} className="bg-gradient-to-r from-zinc-800 to-zinc-600 p-3">Edit Profile</Button>
+              <div className="mt-8 flex justify-end">
+                <Button 
+                  onClick={startEditProfile} 
+                  className="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" /> Edit Profile
+                </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {hasProfile && (
-              <div className="flex justify-end mb-2">
-                <Button variant="outline" onClick={cancelEdit}>Cancel</Button>
+          <div className="space-y-8 p-6 sm:p-8 bg-white border border-slate-200 rounded-xl shadow-xl">
+            {isEditing && (
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold text-orange-600">Update Your Profile</h2>
+                <Button 
+                    variant="outline" 
+                    onClick={cancelEdit}
+                    className="text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900"
+                >
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Cancel
+                </Button>
               </div>
             )}
             
             {!isComplete ? (
               <>
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex space-x-2 sm:space-x-3">
                     {[0, 1, 2].map((i) => (
                       <div
                         key={i}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          step >= i ? "bg-zinc-700 text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300
+                          ${step === i ? "bg-gradient-to-br from-orange-500 to-red-500 text-white scale-110 shadow-lg" 
+                          : step > i ? "bg-green-500 text-white" 
+                          : "bg-slate-200 text-slate-500"}`}
                       >
-                        {i + 1}
+                        {step > i ? <Check className="w-5 h-5"/> : i + 1}
                       </div>
                     ))}
                   </div>
-                  <p className="text-sm text-muted-foreground">Step {step + 1} of 3</p>
+                  <p className="text-sm text-slate-500">Step {step + 1} of 3</p>
                 </div>
 
                 {step === 0 && <UserMetadataForm formData={formData} updateFormData={updateFormData} onNext={nextStep} />}
-
-                {step === 1 && (
-                  <FitnessGoalsForm
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onNext={nextStep}
-                    onPrev={prevStep}
-                  />
-                )}
-
-                {step === 2 && (
-                  <NutritionForm
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onComplete={completeForm}
-                    onPrev={prevStep}
-                  />
-                )}
+                {step === 1 && <FitnessGoalsForm formData={formData} updateFormData={updateFormData} onNext={nextStep} onPrev={prevStep} />}
+                {step === 2 && <NutritionForm formData={formData} updateFormData={updateFormData} onComplete={completeForm} onPrev={prevStep} />}
               </>
             ) : (
               <div className="space-y-6">
                 <FormSummary formData={formData} />
-                <div className="flex justify-center gap-4">
-                  <Button variant="outline" onClick={() => setIsComplete(false)}>Back</Button>
-                  <Button onClick={handleSubmit} className="bg-gradient-to-br from-zinc-800 to-zinc-600 ">
-                    {hasProfile ? "Update Profile" : "Create Profile"}
+                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => { setIsComplete(false); setStep(2); }}
+                    className="text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-900 py-2.5 px-6 rounded-lg"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Back to Edit
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={loading}
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+                  >
+                    {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : (hasProfile && isEditing ? "Update Profile" : "Create My FuelBlitz Profile")}
                   </Button>
                 </div>
               </div>
@@ -220,9 +249,8 @@ export default function Profile() {
           </div>
         )}
       </div>
-      </div>
-      <div className="flex justify-center mt-8 text-muted-foreground text-sm">
-        Accurate metadata enables us to deliver the most relevant and tailored recommendations for you.
+      <div className="text-center mt-10 text-slate-500 text-sm max-w-md">
+        Accurate info fuels precise recommendations, supercharging your FuelBlitz journey!
       </div>
     </main>
   )
