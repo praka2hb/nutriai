@@ -18,6 +18,9 @@ export async function GET(
       userId: 0,
     })
 
+    const startDate = mealPlan?.startDate
+    const expiryDate = mealPlan?.expiryDate
+
     if (!mealPlan) {
       return NextResponse.json(
         { message: "Meal Plan not found" },
@@ -25,7 +28,11 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(mealPlan, { status: 201 })
+    return NextResponse.json({
+      ...mealPlan.toJSON(),
+      startDate,
+      expiryDate
+    }, { status: 201 })
   } catch (error: Error | unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
     return NextResponse.json(

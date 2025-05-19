@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import type { FormData } from "@/app/(nutri)/home/page" 
+import type { UserFormData } from "@/app/(nutri)/home/page" 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,8 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner" 
 
 interface UserMetadataFormProps {
-  formData: FormData
-  updateFormData: (data: Partial<FormData>) => void
+  formData: UserFormData
+  updateFormData: (data: Partial<UserFormData>) => void
   onNext: () => void
 }
 

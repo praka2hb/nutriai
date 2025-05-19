@@ -1,8 +1,8 @@
-import type { FormData } from "@/app/(nutri)/home/page" 
+import type { UserFormData } from "@/app/(nutri)/home/page" 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface FormSummaryProps {
-  formData: FormData
+  formData: UserFormData
 }
 
 export function FormSummary({ formData }: FormSummaryProps) {

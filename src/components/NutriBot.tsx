@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation"
 import { useState, FormEvent } from "react"
 import { toast } from "sonner"
 import axios from "axios"
-import { FormData } from "@/app/(nutri)/home/page"
 
 // Define proper TypeScript interfaces
 interface NutriBotProps {
@@ -15,6 +14,19 @@ interface NutriBotProps {
   userMetadata: FormData | null
   hasProfile: boolean
   userId: string
+}
+
+interface FormData {
+  age: string;
+  height: string;
+  weight: string;
+  gender: string;
+  fitnessGoal: string;
+  allergies: string;
+  activities: string[];
+  activityLevel: string;
+  mealsPerDay: string;
+  dietaryPreferences: string[];
 }
 
 export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId }: NutriBotProps) {

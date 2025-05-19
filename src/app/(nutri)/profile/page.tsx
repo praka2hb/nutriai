@@ -12,19 +12,7 @@ import { toast } from "sonner"
 import UserMetadataCard from "@/components/user-details"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
-export type FormData = {
-  age: string
-  height: string
-  weight: string
-  gender: string
-  fitnessGoal: string
-  allergies: string
-  activities: string[]
-  activityLevel: string
-  mealsPerDay: string
-  dietaryPreferences: string[]
-}
+import { UserFormData } from "../home/page"
 
 export default function Profile() {
   const { data: session, status } = useSession()
@@ -35,7 +23,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [hasProfile, setHasProfile] = useState(false)
   const [step, setStep] = useState(0)
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<UserFormData>({
     age: "",
     height: "",
     weight: "",
@@ -79,7 +67,7 @@ export default function Profile() {
   }, [status, session, router, userId])
 
   // Form handling functions
-  const updateFormData = (data: Partial<FormData>) => {
+  const updateFormData = (data: Partial<UserFormData>) => {
     setFormData(prev => ({ ...prev, ...data }))
   }
 

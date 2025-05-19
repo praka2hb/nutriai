@@ -68,10 +68,11 @@ export default function AppBar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <div className="flex w-full">
-                    Saved Recipes
-                  </div>
+                  <Link href={'/meal-tracker'} className="flex w-full">
+                    Meal Tracking
+                  </Link>
                 </DropdownMenuItem>
+                
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <div onClick={()=> signOut()} className="flex w-full">

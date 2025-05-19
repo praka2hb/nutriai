@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import type { FormData } from "@/app/(nutri)/home/page" 
+import type { UserFormData } from "@/app/(nutri)/home/page" 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner" 
 
 interface FitnessGoalsFormProps {
-  formData: FormData
-  updateFormData: (data: Partial<FormData>) => void
+  formData: UserFormData
+  updateFormData: (data: Partial<UserFormData>) => void
   onNext: () => void
   onPrev: () => void
 }

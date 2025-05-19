@@ -32,50 +32,44 @@ export default function FloatingIcons() {
   const [positions, setPositions] = useState<{ x: number; y: number }[]>([])
 
   useEffect(() => {
-    // Define the four corners with their position ranges
-    const corners = [
-      { xMin: 5, xMax: 20, yMin: 5, yMax: 20 }, // Top-left
-      { xMin: 80, xMax: 95, yMin: 5, yMax: 20 }, // Top-right
-      { xMin: 5, xMax: 20, yMin: 80, yMax: 95 }, // Bottom-left
-      { xMin: 80, xMax: 95, yMin: 80, yMax: 95 }, // Bottom-right
-    ]
+    // Generate random positions across the entire viewport for each icon
+    const newPositions = icons.map(() => ({
+      // x position between 5% and 95% to avoid edges slightly
+      x: Math.random() * 90 + 5, 
+      // y position between 5% and 95%
+      y: Math.random() * 90 + 5, 
+    }));
 
-    const newPositions = icons.map((_, index) => {
-      // Determine which corner this icon belongs to
-      const cornerIndex = index % corners.length
-      const corner = corners[cornerIndex]
-
-      // Generate random position within the corner's range
-      return {
-        x: Math.random() * (corner.xMax - corner.xMin) + corner.xMin,
-        y: Math.random() * (corner.yMax - corner.yMin) + corner.yMin,
-      }
-    })
-
-    setPositions(newPositions)
-  }, [])
+    setPositions(newPositions);
+  }, []); // Empty dependency array ensures this runs once on mount
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    // Using z-0 and relying on other elements having z-10 or higher
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0"> 
       {icons.map((icon, index) => {
-        const IconComponent = icon.component
+        const IconComponent = icon.component;
+        // Ensure positions[index] exists before trying to access x and y
+        if (!positions[index]) {
+          return null; // Or some fallback UI / initial position
+        }
         return (
           <div
             key={index}
-            className="absolute text-white text-opacity-20"
+            // Using a fairly visible style for now, can be tuned down later
+            className="absolute text-slate-400 text-opacity-30" // Adjusted opacity for subtlety
             style={{
-              left: `${positions[index]?.x}%`,
-              top: `${positions[index]?.y}%`,
+              left: `${positions[index].x}%`,
+              top: `${positions[index].y}%`,
               transform: "translate(-50%, -50%)",
-              animation: `float 10s ease-in-out infinite`,
-              animationDelay: `${index * 0.5}s`,
+              animation: `float 12s ease-in-out infinite alternate`, // Added alternate direction
+              animationDelay: `${index * 0.7}s`, // Slightly increased delay staggering
             }}
           >
-            <IconComponent className="w-8 h-8 md:w-12 md:h-12" />
+            <IconComponent className="w-10 h-10 md:w-16 md:h-16" /> 
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 

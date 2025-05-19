@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import type { MealPlan } from '@/lib/mealPlan';
 import { connectToDatabase } from "@/lib/db";
-import MealModel from "@/models/MealModel";
+import mongoose from "mongoose";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -49,14 +49,31 @@ export async function POST(request: Request) {
       const cleanedJSON = text.replace(/```json|```/g, '').trim();
       const mealPlan: MealPlan = JSON.parse(cleanedJSON);
 
-      // 4. Insert the meal plan into the database
-      await MealModel.insertOne({
-        userId,
-        mealPlan
-      });
+      // Create dates
+      const startDate = new Date();
+      const expiryDate = new Date();
+      expiryDate.setDate(startDate.getDate() + parseInt(planDuration));
+
+      // Use direct MongoDB collection access for guaranteed insertion
+      const db = mongoose.connection;
+      const dbResult = await db.collection('mealplans').updateOne(
+        { userId },
+        { 
+          $set: { 
+            mealPlan, 
+            startDate, 
+            expiryDate 
+          } 
+        },
+        { upsert: true }
+      );
+
+      console.log("Database operation result:", dbResult);
 
       return NextResponse.json({
         message: "Meal Plan created successfully",
+        startDate,
+        expiryDate
       }, { status: 201 });
     } catch (genError: unknown) {
       if (genError instanceof Error) {
