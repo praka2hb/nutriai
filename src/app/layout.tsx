@@ -3,7 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/Provider';
 
 export const metadata: Metadata = {
-  title: 'FuelBlitz',
+  title: 'FuelBlitz | Nutrition Made Easy',
   description: 'AI-powered nutrition planning app',
   icons: {
     icon:"/flame.ico",

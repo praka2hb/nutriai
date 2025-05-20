@@ -100,11 +100,11 @@ export default function Root() {
             New AI-Powered Features 
           </Badge>
           {/* Title with flame gradient colors */}
-          <div className="flex space-x-2 items-center justify-center">
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-br from-orange-600 via-red-600 to-amber-500 bg-clip-text text-transparent">
+          <div className="flex flex-col sm:flex-row sm:space-x-2 items-center justify-center">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-br from-orange-600 via-red-600 to-amber-500 bg-clip-text text-transparent">
               FuelBlitz 
             </h1>
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-br from-slate-800 via-zinc-900 to-neutral-900 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-6 bg-gradient-to-br from-slate-800 via-zinc-900 to-neutral-900 bg-clip-text text-transparent">
               Ignite Your Nutrition
             </h1>
           </div>
