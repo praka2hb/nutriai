@@ -1,4 +1,3 @@
-// 1. Create a new route file: src/app/(nutri)/meal-tracker/page.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -65,7 +64,7 @@ export default function MealTracker() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [expiryDate, setExpiryDate] = useState<Date | null>(null);
   const [trackingData, setTrackingData] = useState<Record<string, Record<string, boolean>>>({});
-  const [activeView, setActiveView] = useState("calendar");
+  const [activeView, setActiveView] = useState("list");
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -76,6 +75,7 @@ export default function MealTracker() {
   const [selectedDay, setSelectedDay] = useState<string>(
     Object.keys(mealPlanData || {})[0] || "day1"
   );
+  const [error, setError] = useState<string | null>(null);
 
   // Load meal plan data
   useEffect(() => {
@@ -142,34 +142,32 @@ export default function MealTracker() {
         .filter((meal: TrackingItem) => meal.completed)
         .length;
       
-      // Calculate today's date in YYYY-MM-DD format for consistent comparison
-      const today = new Date().toISOString().split('T')[0];
-      
       let todayTotal = 0;
       let todayCompleted = 0;
       
-      // Process tracking data
-      trackedMeals.forEach((item: TrackingItem) => {
-        const { timestamp, completed } = item;
-        
-        // Check if this meal is for today
-        if (timestamp) {
-          const mealDate = new Date(timestamp).toISOString().split('T')[0];
-          if (mealDate === today) {
-            todayTotal++;
-            if (completed) todayCompleted++;
-          }
-        }
-      });
-      
       // Calculate today's meals from plan
-      // Find which day of the plan corresponds to today
+      // Find which day of the plan corresponds to today using UTC dates
       let todayPlanDay = null;
       if (startDate) {
-        const startDateObj = new Date(startDate);
-        const todayObj = new Date();
-        const diffTime = todayObj.getTime() - startDateObj.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        // Use the same UTC calculation as isCurrentDay
+        const planStart = new Date(startDate);
+        const planStartUTC = Date.UTC(
+          planStart.getUTCFullYear(),
+          planStart.getUTCMonth(), 
+          planStart.getUTCDate(),
+          0, 0, 0, 0
+        );
+        
+        const today = new Date();
+        const todayUTC = Date.UTC(
+          today.getUTCFullYear(),
+          today.getUTCMonth(),
+          today.getUTCDate(),
+          0, 0, 0, 0
+        );
+        
+        // Calculate days since plan started using UTC dates
+        const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
         
         if (diffDays >= 0 && diffDays < Object.keys(mealPlanData).length) {
           todayPlanDay = `day${diffDays + 1}`;
@@ -262,10 +260,12 @@ export default function MealTracker() {
 
   // Toggle meal completion
   const toggleMealComplete = async (day: string, mealType: string) => {
+    // Clear any previous errors
+    setError(null);
+    
     // Prevent toggling for days other than today
     if (!isCurrentDay(day)) {
-      // Optional: Show a toast or alert to inform the user
-      console.log("You can only track meals for today");
+      setError("You can only track meals for the current day");
       return;
     }
     
@@ -294,8 +294,14 @@ export default function MealTracker() {
         mealType,
         completed: newState
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to update tracking", err);
+      
+      // Display error message from API or a fallback
+      const errorMessage = err instanceof Error ? err.message : "Failed to update meal tracking";
+      setError(errorMessage);
+      
+      // Reload tracking data to revert changes
       loadTrackingData();
     }
   };
@@ -314,24 +320,93 @@ export default function MealTracker() {
     });
   };
 
-  // Calculate if a day is current day based on start date
+  // Update the isCurrentDay function to be timezone consistent
   const isCurrentDay = (day: string) => {
-    if (!startDate) return false;
+    if (!startDate || !mealPlanData) return false;
     
-    const dayNum = parseInt(day.replace("day", "")) - 1;
-    const planDate = new Date(startDate);
-    planDate.setDate(planDate.getDate() + dayNum);
+    // Get plan start date and convert to UTC date components
+    const planStart = new Date(startDate);
+    const planStartUTC = Date.UTC(
+      planStart.getUTCFullYear(),
+      planStart.getUTCMonth(),
+      planStart.getUTCDate(),
+      0, 0, 0, 0
+    );
     
+    // Get today in UTC
     const today = new Date();
-    return planDate.toDateString() === today.toDateString();
+    const todayUTC = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+      0, 0, 0, 0
+    );
+    
+    // Calculate days since plan started using UTC dates
+    const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
+    const currentDayKey = `day${diffDays + 1}`;
+    
+    // For debugging
+    console.log({
+      planStartUTC: new Date(planStartUTC).toISOString(),
+      todayUTC: new Date(todayUTC).toISOString(),
+      diffDays,
+      currentDayKey,
+      checkedDay: day,
+      isMatch: day === currentDayKey
+    });
+    
+    // Compare with the requested day
+    return day === currentDayKey;
   };
 
-  // Update when mealPlanData loads
+  // Move the getCurrentDayKey function above the useEffect that uses it
+  const getCurrentDayKey = useCallback(() => {
+    if (!startDate || !mealPlanData) return null;
+    
+    // Get plan start date and convert to UTC date components
+    const planStart = new Date(startDate);
+    const planStartUTC = Date.UTC(
+      planStart.getUTCFullYear(),
+      planStart.getUTCMonth(),
+      planStart.getUTCDate(),
+      0, 0, 0, 0
+    );
+    
+    // Get today in UTC
+    const today = new Date();
+    const todayUTC = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+      0, 0, 0, 0
+    );
+    
+    // Calculate days since plan started using UTC dates
+    const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
+    const currentDayKey = `day${diffDays + 1}`;
+    
+    // Check if this key exists in the meal plan
+    if (diffDays >= 0 && mealPlanData && diffDays < Object.keys(mealPlanData).length) {
+      return currentDayKey;
+    }
+    
+    return null;
+  }, [startDate, mealPlanData]);
+
+  // Now the useEffect uses getCurrentDayKey defined above
   useEffect(() => {
     if (mealPlanData && Object.keys(mealPlanData).length > 0) {
-      setSelectedDay(Object.keys(mealPlanData)[0]);
+      // Set current day if it exists in the plan
+      const currentDay = getCurrentDayKey();
+      if (currentDay && mealPlanData[currentDay]) {
+        setSelectedDay(currentDay);
+      } else {
+        // Fall back to the first day
+        setSelectedDay(Object.keys(mealPlanData)[0]);
+      }
     }
-  }, [mealPlanData]);
+  }, [mealPlanData, startDate, getCurrentDayKey]);
 
   if (isLoading) {
     return (
@@ -351,6 +426,13 @@ export default function MealTracker() {
           </Button>
         </Link>
       </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 flex items-center">
+          <span className="mr-2">⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50">

@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { GeistSans } from "geist/font/sans";
-// Keeping energetic icons, but colors will be toned down or adjusted
 import { ArrowRight, CheckCircle, Sparkles, BarChart3, TrendingUp as TrendingUpIcon, Target, Zap, Brain } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +11,6 @@ import ImageGallery from "@/components/ImageGallery";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-// Reverted features to original/neutral icon colors if they were changed
 const features = [
   {
     icon: <CheckCircle className="w-7 h-7 text-emerald-600 group-hover:text-emerald-500 transition-colors duration-300" />,
@@ -97,14 +95,19 @@ export default function Root() {
       {/* Hero Section */}
         <div className="w-full max-w-6xl mt-12 mb-16 md:mt-16 md:mb-24 text-center z-10">
           {/* Reverted Badge to previous style */}
-          <Badge variant="outline" className="mb-6 py-2 px-4 border-emerald-500/70 text-emerald-700 bg-emerald-50/80 text-sm font-medium shadow-sm hover:bg-emerald-100/70 transition-colors">
-            <Sparkles className="w-4 h-4 mr-2 text-emerald-500" /> 
+          <Badge variant="outline" className="mb-6 py-2 px-4 border-amber-500/70 text-amber-700 bg-amber-50/80 text-sm font-medium shadow-sm hover:bg-amber-100/70 transition-colors">
+            <Sparkles className="w-4 h-4 mr-2 text-amber-500" /> 
             New AI-Powered Features 
           </Badge>
-          {/* Title still says FuelBlitz, but gradient is back to more neutral/cool */}
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-tr from-slate-800 via-zinc-900 to-neutral-900 bg-clip-text text-transparent">
-             FuelBlitz: Ignite Your Nutrition
-        </h1>
+          {/* Title with flame gradient colors */}
+          <div className="flex space-x-2 items-center justify-center">
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-br from-orange-600 via-red-600 to-amber-500 bg-clip-text text-transparent">
+              FuelBlitz 
+            </h1>
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-br from-slate-800 via-zinc-900 to-neutral-900 bg-clip-text text-transparent">
+              Ignite Your Nutrition
+            </h1>
+          </div>
           {/* Reverted paragraph text color */}
           <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
             Precision nutrition plans, AI-crafted to supercharge your unique profile. Get ready for peak performance!
@@ -113,7 +116,7 @@ export default function Root() {
             {/* Reverted Button styles */}
           <Button
             size="lg"
-              className="bg-slate-800 hover:bg-slate-700 text-white text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-zinc-900 hover:bg-zinc-700 text-white text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             onClick={signInHandler}
           >
               Start Your Blitz <ArrowRight className="ml-2 h-5 w-5" />
@@ -187,15 +190,15 @@ export default function Root() {
 
         <ImageGallery />
 
-          {/* CTA Section - Reverted to previous dark gradient, text colors adjusted for readability */}
+          {/* CTA Section - modify heading */}
           <div className="p-10 md:p-16 bg-gradient-to-br from-slate-800 via-zinc-800 to-neutral-900 text-white text-center">
             <Sparkles className="w-10 h-10 text-yellow-400 mx-auto mb-4" /> {/* Sparkles icon is fine */}
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Nutrition?</h2>
-            <p className="text-slate-300 max-w-xl mx-auto mb-8 text-lg">Join thousands of users achieving their health goals with FuelBlitz.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent">Transform</span> Your Nutrition?</h2>
+            <p className="text-slate-300 max-w-xl mx-auto mb-8 text-lg">Join thousands of users achieving their health goals with <span className="text-amber-400">FuelBlitz</span>.</p>
             {/* Reverted button to previous style (light on dark) */}
             <Button 
               size="lg" 
-              className="bg-white text-slate-800 hover:bg-slate-100 text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 font-semibold transform hover:scale-105"
+              className="bg-white text-zinc-900 hover:bg-zinc-100 text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 font-semibold transform hover:scale-105"
               onClick={signInHandler}
             >
               Start Fueling <ArrowRight className="ml-2 h-5 w-5" />
@@ -203,9 +206,9 @@ export default function Root() {
         </div>
       </div>
 
-        {/* Footer - Reverted text color */}
+        {/* Footer with flame-colored brand name */}
         <div className="w-full max-w-6xl mt-8 mb-8 text-center text-slate-500 text-sm z-10">
-          <p>© Powered by FuelBlitz</p>
+          <p>© Powered by <span className="bg-gradient-to-r from-amber-500 via-red-600 to-orange-500 bg-clip-text text-transparent font-bold">FuelBlitz</span></p>
       </div>
     </main>
     </>

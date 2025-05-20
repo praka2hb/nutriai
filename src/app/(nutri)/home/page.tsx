@@ -1,4 +1,3 @@
-// src/app/(nutri)/home/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,7 +8,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Check, ChevronRight, PieChart as PieChartIcon, Calendar, Pizza, Clock, Trophy, Zap } from "lucide-react";
+import { Check, ChevronRight, PieChart as PieChartIcon, Calendar, Pizza, Clock, Trophy, Zap, Sparkles, CheckCircle, Apple } from "lucide-react";
 import { Utensils, Coffee } from "lucide-react";
 import NutriBot from "@/components/NutriBot";
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -95,6 +94,7 @@ export default function HomePage() {
     carbs: 0,
     fats: 0,
   });
+  const [allTodayMealsCompleted, setAllTodayMealsCompleted] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -132,42 +132,43 @@ export default function HomePage() {
           });
           
           if (planStartDate && currentMealPlan) {
-            const todayDate = new Date();
-            const diffDays = Math.floor((todayDate.getTime() - planStartDate.getTime()) / (1000 * 60 * 60 * 24));
+            // Use UTC date methods for consistent date handling
+            const todayObj = new Date();
+            const todayUTC = Date.UTC(
+              todayObj.getUTCFullYear(),
+              todayObj.getUTCMonth(),
+              todayObj.getUTCDate(),
+              0, 0, 0, 0
+            );
+            
+            const planStartObj = new Date(planStartDate);
+            const planStartUTC = Date.UTC(
+              planStartObj.getUTCFullYear(),
+              planStartObj.getUTCMonth(),
+              planStartObj.getUTCDate(),
+              0, 0, 0, 0
+            );
+            
+            const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
             
             if (diffDays >= 0 && diffDays < Object.keys(currentMealPlan).length) {
               const todayKey = `day${diffDays + 1}`;
               
-              const now = new Date();
-              const hour = now.getHours();
+              const todayMealTypesFromPlan = Object.keys(currentMealPlan[todayKey])
+                .filter(key => !["calories", "protein", "carbs", "fats"].includes(key));
               
-              let nextMealType = "breakfast";
-              if (hour >= 7 && hour < 12) nextMealType = "lunch";
-              else if (hour >= 12 && hour < 18) nextMealType = "dinner";
-              else if (hour >= 18) nextMealType = "breakfast"; 
+              const todayMeals = todayMealTypesFromPlan.length;
               
-              const mealData = currentMealPlan[todayKey]?.[nextMealType] as MealDataItem | undefined;
-              if (mealData) {
-                setUpcomingMeal({
-                  type: nextMealType,
-                  data: mealData,
-                  day: todayKey
-                });
-              }
-            }
-          }
-        }
-        
-        const trackingRes = await axios.get<{ completedMeals: TrackingItem[] }>(`/api/mealtracking?userId=${userId}`);
+              const trackingRes = await axios.get<{ completedMeals: TrackingItem[] }>(`/api/mealtracking?userId=${userId}`);
         if (trackingRes.data?.completedMeals) {
           const trackedMeals = trackingRes.data.completedMeals;
           
           const trackingMap: Record<string, Record<string, boolean>> = {};
-          const uniqueMeals = new Map<string, TrackingItem>(); 
+                const uniqueMeals = new Map<string, TrackingItem>(); 
           
           trackedMeals
-            .sort((a: TrackingItem, b: TrackingItem) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .forEach((item: TrackingItem) => {
+                  .sort((a: TrackingItem, b: TrackingItem) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                  .forEach((item: TrackingItem) => {
               const { day, mealType, completed, timestamp } = item;
               const mealKey = `${day}-${mealType}`;
               
@@ -180,67 +181,104 @@ export default function HomePage() {
             });
           
           const completedCount = Array.from(uniqueMeals.values())
-            .filter((meal: TrackingItem) => meal.completed)
+                  .filter((meal: TrackingItem) => meal.completed)
             .length;
           
           let todayPlanDay = "";
-          let todayMeals = 0;
-          let todayCompletedCount = 0;
-          
-          let dailyConsumedCalories = 0;
-          let dailyConsumedProtein = 0;
-          let dailyConsumedCarbs = 0;
-          let dailyConsumedFats = 0;
-          
-          if (currentMealPlan && planStartDate) {
-            const todayDate = new Date();
-            const diffTime = todayDate.getTime() - planStartDate.getTime();
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays >= 0 && diffDays < Object.keys(currentMealPlan).length) {
+                let todayCompletedCount = 0;
+                
+                let dailyConsumedCalories = 0;
+                let dailyConsumedProtein = 0;
+                let dailyConsumedCarbs = 0;
+                let dailyConsumedFats = 0;
+                
+                if (diffDays >= 0 && diffDays < Object.keys(currentMealPlan).length) {
               todayPlanDay = `day${diffDays + 1}`;
               
-              const todayMealTypesFromPlan = Object.keys(currentMealPlan[todayPlanDay])
-                .filter(key => !["calories", "protein", "carbs", "fats"].includes(key));
-              
-              todayMeals = todayMealTypesFromPlan.length;
-              
-              todayCompletedCount = todayMealTypesFromPlan.filter(
+                  todayCompletedCount = todayMealTypesFromPlan.filter(
                 mealType => todayPlanDay && trackingMap[todayPlanDay]?.[mealType]
               ).length;
 
-              todayMealTypesFromPlan.forEach(mealType => {
-                if (trackingMap[todayPlanDay]?.[mealType]) { 
-                  const mealData = currentMealPlan![todayPlanDay][mealType] as MealDataItem; 
-                  if (mealData) {
-                    dailyConsumedCalories += mealData.calories || 0;
-                    dailyConsumedProtein += mealData.protein || 0;
-                    dailyConsumedCarbs += mealData.carbs || 0;
-                    dailyConsumedFats += mealData.fats || 0;
+                  // Check if all of today's meals are completed
+                  setAllTodayMealsCompleted(todayCompletedCount === todayMeals && todayMeals > 0);
+
+                  // Only set upcoming meal if there are still meals to complete
+                  if (todayCompletedCount < todayMeals) {
+                    // Find the next incomplete meal for today
+                    const incompleteMeals = todayMealTypesFromPlan.filter(
+                      mealType => !trackingMap[todayPlanDay]?.[mealType]
+                    );
+                    
+                    if (incompleteMeals.length > 0) {
+                      // Prioritize meals based on time of day
+                      const now = new Date();
+                      const hour = now.getHours();
+                      
+                      let nextMealType = incompleteMeals[0]; // Default to first incomplete meal
+                      
+                      // Try to find the most appropriate next meal based on time
+                      if (hour < 12 && incompleteMeals.includes("breakfast")) {
+                        nextMealType = "breakfast";
+                      } else if (hour >= 7 && hour < 18 && incompleteMeals.includes("lunch")) {
+                        nextMealType = "lunch";
+                      } else if (hour >= 12 && incompleteMeals.includes("dinner")) {
+                        nextMealType = "dinner";
+                      } else if (incompleteMeals.includes("snacks") || incompleteMeals.includes("snack")) {
+                        nextMealType = incompleteMeals.find(meal => meal.includes("snack")) || nextMealType;
+                      }
+                      
+                      const mealData = currentMealPlan[todayPlanDay][nextMealType] as MealDataItem;
+                      if (mealData) {
+                        setUpcomingMeal({
+                          type: nextMealType,
+                          data: mealData,
+                          day: todayPlanDay
+                        });
+                      }
+                    } else {
+                      // No incomplete meals (shouldn't happen here, but just in case)
+                      setUpcomingMeal(null);
+                    }
+                  } else {
+                    // All meals completed, so clear the upcoming meal
+                    setUpcomingMeal(null);
                   }
+
+                  // Calculate consumed macros (no change from your existing code)
+                  todayMealTypesFromPlan.forEach(mealType => {
+                    if (trackingMap[todayPlanDay]?.[mealType]) { 
+                      const mealData = currentMealPlan![todayPlanDay][mealType] as MealDataItem; 
+                      if (mealData) {
+                        dailyConsumedCalories += mealData.calories || 0;
+                        dailyConsumedProtein += mealData.protein || 0;
+                        dailyConsumedCarbs += mealData.carbs || 0;
+                        dailyConsumedFats += mealData.fats || 0;
+                      }
+                    }
+                  });
                 }
-              });
-            }
-          }
-          
-          setConsumedMacros({
-            calories: dailyConsumedCalories,
-            protein: dailyConsumedProtein,
-            carbs: dailyConsumedCarbs,
-            fats: dailyConsumedFats,
-          });
+                
+                setConsumedMacros({
+                  calories: dailyConsumedCalories,
+                  protein: dailyConsumedProtein,
+                  carbs: dailyConsumedCarbs,
+                  fats: dailyConsumedFats,
+                });
           
           setTrackingStats({
             completed: completedCount,
-            total: Object.keys(currentMealPlan || {}).reduce((count, day) => {
-              const dayMeals = Object.keys((currentMealPlan || {})[day])
-                .filter(key => !["calories", "protein", "carbs", "fats"].includes(key));
-              return count + dayMeals.length;
-            }, 0),
-            todayCompleted: todayCompletedCount,
+                  total: Object.keys(currentMealPlan || {}).reduce((count, day) => {
+                    const dayMeals = Object.keys((currentMealPlan || {})[day])
+                      .filter(key => !["calories", "protein", "carbs", "fats"].includes(key));
+                    return count + dayMeals.length;
+                  }, 0),
+                  todayCompleted: todayCompletedCount,
             todayTotal: todayMeals,
-            streak: planStartDate ? calculateStreak(trackedMeals, planStartDate) : 0,
+                  streak: planStartDate ? calculateStreak(trackedMeals, planStartDate) : 0,
           });
+              }
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -435,7 +473,46 @@ export default function HomePage() {
             </CardContent>
           </Card>
           
-          {upcomingMeal && (
+          {allTodayMealsCompleted ? (
+            <Card className="overflow-hidden border-neutral-200 bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardHeader className="pb-2 bg-gradient-to-r from-green-50 to-white border-b">
+                <div className="flex items-center justify-between">
+                  <CardTitle>Today&apos;s Meals Completed!</CardTitle>
+                  <Sparkles className="h-5 w-5 text-emerald-500" />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6 pb-6 text-center">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100 mb-4">
+                  <CheckCircle className="h-10 w-10 text-emerald-500" />
+                </div>
+                <h3 className="font-semibold text-xl text-emerald-700 mb-2">Well done!</h3>
+                <p className="text-emerald-600">You&apos;ve completed all your meals for today!</p>
+                
+                {trackingStats.streak > 1 && (
+                  <div className="mt-4 p-3 bg-white/70 rounded-lg border border-emerald-100">
+                    <p className="text-sm font-medium text-emerald-800">
+                      {trackingStats.streak} day streak! Keep it up!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="bg-green-50/80 py-3 px-4 flex justify-between">
+                <Link href="/meal-plan" className="text-sm text-emerald-600 flex items-center">
+                  View tomorrow&apos;s meals
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+                <Link href="/meal-tracker">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    View Progress
+                  </Button>
+                </Link>
+              </CardFooter>
+            </Card>
+          ) : upcomingMeal && (
             <Card className="overflow-hidden border-neutral-200">
               <CardHeader className="pb-2 bg-gradient-to-r from-neutral-50 to-white border-b">
                 <div className="flex items-center justify-between">
@@ -449,6 +526,9 @@ export default function HomePage() {
                     {upcomingMeal.type === 'breakfast' && <Coffee className="h-6 w-6 text-neutral-700" />}
                     {upcomingMeal.type === 'lunch' && <Utensils className="h-6 w-6 text-neutral-700" />}
                     {upcomingMeal.type === 'dinner' && <Pizza className="h-6 w-6 text-neutral-700" />}
+                    {(upcomingMeal.type === 'snacks' || upcomingMeal.type.includes('snack')) && 
+                      <Apple className="h-6 w-6 text-neutral-700" />
+                    }
                   </div>
                   <div>
                     <h3 className="font-medium capitalize">{upcomingMeal.type}</h3>
@@ -463,6 +543,9 @@ export default function HomePage() {
                       <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
                         C: {upcomingMeal.data.carbs}g
                       </span>
+                      <span className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded">
+                        F: {upcomingMeal.data.fats}g
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -472,17 +555,15 @@ export default function HomePage() {
                   View full meal plan
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
-                
+                <Link href="/meal-tracker">
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="text-xs"
-                  onClick={() => {
-                    alert(`Marked ${upcomingMeal.type} as completed!`);
-                  }}
                 >
-                  Mark as Complete
+                    Go to Tracker
                 </Button>
+                </Link>
               </CardFooter>
             </Card>
           )}

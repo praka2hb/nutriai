@@ -106,9 +106,42 @@ export default function MealPlanPage() {
             if (res.data.expiryDate) {
               setExpiryDate(new Date(res.data.expiryDate))
             }
-            const firstDay = Object.keys(res.data.mealPlan[0])[0];
+            
+            const plan = res.data.mealPlan[0];
+            if (res.data.startDate) {
+              const startDateObj = new Date(res.data.startDate);
+              const todayObj = new Date();
+              
+              const planStartUTC = Date.UTC(
+                startDateObj.getUTCFullYear(),
+                startDateObj.getUTCMonth(),
+                startDateObj.getUTCDate(),
+                0, 0, 0, 0
+              );
+              
+              const todayUTC = Date.UTC(
+                todayObj.getUTCFullYear(),
+                todayObj.getUTCMonth(),
+                todayObj.getUTCDate(),
+                0, 0, 0, 0
+              );
+              
+              const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
+              const currentDayKey = `day${diffDays + 1}`;
+              
+              if (diffDays >= 0 && diffDays < Object.keys(plan).length && plan[currentDayKey]) {
+                setActiveDay(currentDayKey);
+              } else {
+                const firstDay = Object.keys(plan)[0];
+                if (firstDay) {
+                  setActiveDay(firstDay);
+                }
+              }
+            } else {
+              const firstDay = Object.keys(plan)[0];
             if (firstDay) {
               setActiveDay(firstDay);
+              }
             }
           }
         }
@@ -166,9 +199,27 @@ export default function MealPlanPage() {
 
   const getCurrentDayKey = () => {
     if (!startDate) return null;
-    const todayDate = new Date();
-    const diffTime = todayDate.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Get plan start date and convert to UTC date components
+    const planStart = new Date(startDate);
+    const planStartUTC = Date.UTC(
+      planStart.getUTCFullYear(),
+      planStart.getUTCMonth(),
+      planStart.getUTCDate(),
+      0, 0, 0, 0
+    );
+    
+    // Get today in UTC
+    const today = new Date();
+    const todayUTC = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+      0, 0, 0, 0
+    );
+    
+    // Calculate days since plan started using UTC dates
+    const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
     
     if (diffDays >= 0 && diffDays < Object.keys(mealPlanData || {}).length) {
       return `day${diffDays + 1}`;
@@ -235,10 +286,50 @@ export default function MealPlanPage() {
               if (res.data?.mealPlan?.[0]) {
                 setMealPlanData(res.data.mealPlan[0])
                 setHasData(true)
-                if (res.data.startDate) { setStartDate(new Date(res.data.startDate)) }
-                if (res.data.expiryDate) { setExpiryDate(new Date(res.data.expiryDate)) }
-                const firstDay = Object.keys(res.data.mealPlan[0])[0];
-                if (firstDay) { setActiveDay(firstDay); }
+                
+                if (res.data.startDate) {
+                  setStartDate(new Date(res.data.startDate))
+                }
+                if (res.data.expiryDate) {
+                  setExpiryDate(new Date(res.data.expiryDate))
+                }
+                
+                const plan = res.data.mealPlan[0];
+                if (res.data.startDate) {
+                  const startDateObj = new Date(res.data.startDate);
+                  const todayObj = new Date();
+                  
+                  const planStartUTC = Date.UTC(
+                    startDateObj.getUTCFullYear(),
+                    startDateObj.getUTCMonth(),
+                    startDateObj.getUTCDate(),
+                    0, 0, 0, 0
+                  );
+                  
+                  const todayUTC = Date.UTC(
+                    todayObj.getUTCFullYear(),
+                    todayObj.getUTCMonth(),
+                    todayObj.getUTCDate(),
+                    0, 0, 0, 0
+                  );
+                  
+                  const diffDays = Math.floor((todayUTC - planStartUTC) / (1000 * 60 * 60 * 24));
+                  const currentDayKey = `day${diffDays + 1}`;
+                  
+                  if (diffDays >= 0 && diffDays < Object.keys(plan).length && plan[currentDayKey]) {
+                    setActiveDay(currentDayKey);
+                  } else {
+                    const firstDay = Object.keys(plan)[0];
+                    if (firstDay) {
+                      setActiveDay(firstDay);
+                    }
+                  }
+                } else {
+                  const firstDay = Object.keys(plan)[0];
+                  if (firstDay) {
+                    setActiveDay(firstDay);
+                  }
+                }
               } else {
                 setHasData(false);
               }
@@ -305,61 +396,43 @@ export default function MealPlanPage() {
       
       {mealPlanData && Object.keys(mealPlanData).length > 0 && (
         <Tabs value={activeDay} onValueChange={setActiveDay} className="w-full">
-          <div className="relative mb-6 sm:mb-8">
-            <div className="overflow-x-auto pb-0 hide-scrollbar border-b border-neutral-200 dark:border-neutral-700">
-              <TabsList className="inline-flex items-center justify-start space-x-0 bg-transparent p-0 w-auto min-w-full sm:min-w-[auto] sm:w-auto">
-                {Object.keys(mealPlanData).map((day) => {
-                  const isCurrentDay = day === getCurrentDayKey();
-                  return (
-                    <TabsTrigger
-                      key={day}
-                      value={day}
-                      className={`
-                        flex-shrink-0 relative px-3 py-3 sm:px-4 sm:py-3.5 transition-all duration-200 ease-in-out
-                        text-xs sm:text-sm leading-tight whitespace-nowrap border-b-2 
-                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-0
-
-                        text-neutral-500 border-transparent font-medium 
-                        hover:text-neutral-700 hover:border-neutral-300
-                        dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:border-neutral-600
-
-                        ${isCurrentDay && `
-                          data-[state=inactive]:text-sky-700 
-                          data-[state=inactive]:font-semibold 
-                          data-[state=inactive]:border-sky-500 
-                          data-[state=inactive]:bg-sky-50/60 
-                          dark:data-[state=inactive]:text-sky-300 
-                          dark:data-[state=inactive]:border-sky-400
-                          dark:data-[state=inactive]:bg-sky-500/10
-                        `}
-                        
-                        data-[state=active]:text-orange-600 
-                        data-[state=active]:border-orange-600 
-                        data-[state=active]:font-semibold
-                        data-[state=active]:bg-orange-50/50
-                        dark:data-[state=active]:text-orange-400 
-                        dark:data-[state=active]:border-orange-400
-                        dark:data-[state=active]:bg-orange-500/10
-                      `}
-                    >
-                      {dayNames[day as keyof typeof dayNames] || day} 
-                      <span className={`ml-1.5 text-[10px] sm:text-xs hidden xs:inline
-                                        ${isCurrentDay ? 
-                                          'font-medium data-[state=inactive]:text-sky-600 dark:data-[state=inactive]:text-sky-400' : 
-                                          'text-neutral-400 dark:text-neutral-500'}
-                                        
-                                        data-[state=active]:${isCurrentDay ? 
-                                          'text-orange-600 dark:text-orange-400 font-semibold' : 
-                                          'text-orange-500/90 dark:text-orange-400/90'
-                                        } 
-                                       `}>
-                        ({getDayDate(day)})
-                      </span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </div>
+          <div className="w-full">
+            <TabsList className="w-full grid grid-cols-7 bg-transparent p-0 h-auto rounded-none border-b border-neutral-200 gap-0 [&>*]:flex-1">
+              {Object.keys(mealPlanData).map((day) => {
+                const isCurrentDay = day === getCurrentDayKey();
+                return (
+                  <TabsTrigger 
+                    key={day} 
+                    value={day} 
+                    className={`
+                      flex-1 min-w-0 w-full
+                      flex flex-col items-center justify-center py-3 px-1
+                      rounded-none
+                      text-xs leading-tight whitespace-nowrap
+                      focus-visible:outline-none focus-visible:ring-0
+                      border-0 border-b-2 border-transparent
+                      data-[state=active]:rounded-none
+                      data-[state=active]:text-orange-600 
+                      data-[state=active]:border-orange-600 
+                      data-[state=active]:font-semibold
+                      data-[state=active]:bg-orange-50/50
+                      ${isCurrentDay && 'border-b-2 border-sky-500'}
+                      ${day === activeDay ? '' : isCurrentDay ? 'text-sky-700 font-semibold' : 'text-neutral-500'}
+                    `}
+                  >
+                    <span className="text-center truncate w-full">
+                      {isCurrentDay && !isNaN(parseInt(day.replace("day", ""))) && "• "}
+                      {dayNames[day as keyof typeof dayNames] || day}
+                    </span>
+                    <span className={`text-[9px] text-center mt-0.5 truncate w-full ${
+                      isCurrentDay ? 'text-sky-600 font-medium' : 'text-neutral-400'
+                    }`}>
+                      {getDayDate(day)}
+                    </span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
           </div>
 
           {Object.keys(mealPlanData).map((day) => (
@@ -379,29 +452,29 @@ export default function MealPlanPage() {
                     </div>
                     <CardDescription className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1 leading-tight">
                       Calories: {currentDayPlan.calories} kcal, Protein: {currentDayPlan.protein}g, Carbs: {currentDayPlan.carbs}g, Fats: {currentDayPlan.fats}g
-                    </CardDescription>
-                  </CardHeader>
+                      </CardDescription>
+                    </CardHeader>
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-2">
                       {Object.entries(currentDayPlan)
-                        .filter(([key]) => !["calories", "protein", "carbs", "fats"].includes(key))
+                          .filter(([key]) => !["calories", "protein", "carbs", "fats"].includes(key))
                         .map(([mealType, mealDetails]) => {
                           if (!mealDetails || typeof mealDetails === 'number') return null;
                           const details = mealDetails as DayMeals;
                           const photoUrl = mealPhotos[mealType as keyof typeof mealPhotos] || "/default-meal.jpg";
                             
-                          return (
+                            return (
                             <div key={mealType} className="border-b md:border-r dark:border-neutral-700 p-3 sm:p-4 group hover:bg-slate-50/70 dark:hover:bg-neutral-750/50 transition-colors duration-200 ease-in-out">
                               <div className="flex items-start space-x-3 sm:space-x-4">
                                 <div className="relative w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg overflow-hidden shadow-md flex-shrink-0">
-                                  <Image
+                                      <Image
                                     src={photoUrl} 
-                                    alt={mealType}
+                                        alt={mealType}
                                     layout="fill" 
                                     objectFit="cover" 
                                     className="group-hover:scale-105 transition-transform duration-300"
-                                  />
-                                </div>
+                                      />
+                                    </div>
                                 <div className="flex-grow">
                                   <div className="flex items-center mb-0.5 sm:mb-1 text-slate-700 dark:text-neutral-300 group-hover:text-slate-800 dark:group-hover:text-neutral-100">
                                     {mealIcons[mealType as keyof typeof mealIcons] || <Utensils className="h-4 w-4 sm:h-5 sm:w-5" />}
@@ -414,19 +487,19 @@ export default function MealPlanPage() {
                                     <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.protein}g P</Badge>
                                     <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.carbs}g C</Badge>
                                     <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">{details.fats}g F</Badge>
-                                  </div>
-                                </div>
+                                      </div>
+                                    </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </CardContent>
-                </Card>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </CardContent>
+                  </Card>
               )}
-            </TabsContent>
+                </TabsContent>
           ))}
-        </Tabs>
+          </Tabs>
       )}
       
     </div>

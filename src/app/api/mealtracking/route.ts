@@ -1,4 +1,3 @@
-// 2. Create API endpoint in src/app/api/mealtracking/route.ts
 import { connectToDatabase } from "@/lib/db";
 import MealTrackingModel from "@/models/MealTrackingModel";
 import { NextResponse } from "next/server";
@@ -13,10 +12,35 @@ export async function POST(request: Request) {
     const userMealPlan = await MealPlanModel.findOne({ userId });
     
     if (userMealPlan?.startDate) {
+      // Use UTC date methods for consistent date handling regardless of server timezone
       const startDate = new Date(userMealPlan.startDate);
+      const startDateUTC = Date.UTC(
+        startDate.getUTCFullYear(),
+        startDate.getUTCMonth(),
+        startDate.getUTCDate(),
+        0, 0, 0, 0
+      );
+      
       const today = new Date();
-      const diffDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const todayUTC = Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+        0, 0, 0, 0
+      );
+      
+      // Calculate difference in days using UTC timestamps
+      const diffDays = Math.floor((todayUTC - startDateUTC) / (1000 * 60 * 60 * 24));
       const currentDayKey = `day${diffDays + 1}`;
+      
+      // Add debug logging
+      console.log({
+        startDateUTC: new Date(startDateUTC).toISOString(),
+        todayUTC: new Date(todayUTC).toISOString(),
+        diffDays,
+        currentDayKey,
+        requestedDay: day
+      });
       
       // Only allow tracking for the current day
       if (day !== currentDayKey) {
