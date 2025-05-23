@@ -23,16 +23,32 @@ export default function QuitButtonWithModal({userId}: {userId: string}) {
   const dispatch = useDispatch()
 
   const handleQuit = async (userId: string) => {
-    const res = await axios.delete(`/api/mealplan/${userId}`)
-    if (res.status === 200 || res.status === 201) {
-      setIsOpen(false)
-      dispatch(clearMealPlan())
-      toast.success(res.data.message,{
-        description: "You can get a fresh, customized meal plan anytime—just say the word!",
-      })
-      router.push('/home')
+  try {
+  // First delete the meal plan
+      const mealPlanRes = await axios.delete(`/api/mealplan/${userId}`);
+      
+      if (mealPlanRes.status === 200 || mealPlanRes.status === 201) {
+        // Then delete the tracking data
+        const trackingRes = await axios.delete(`/api/mealtracking?userId=${userId}`);
+        
+        if (trackingRes.status === 200) {
+          setIsOpen(false);
+          dispatch(clearMealPlan());
+          toast.success(mealPlanRes.data.message || "Meal plan deleted", {
+            description: "You can get a fresh, customized meal plan anytime—just say the word!",
+          });
+          router.push('/home');
+        } else {
+          toast.error("Failed to delete tracking data");
+        }
+      } else {
+        toast.error("Failed to delete meal plan");
+      }
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      toast.error("Something went wrong when deleting your data");
     }
-  }
+    };
 
   return (
     <div className="flex items-center justify-center">

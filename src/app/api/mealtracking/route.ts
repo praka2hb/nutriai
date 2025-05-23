@@ -88,3 +88,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to get tracking data" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const userId = url.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json({ error: "User ID required" }, { status: 400 });
+    }
+    
+    await connectToDatabase();
+    await MealTrackingModel.deleteMany({ userId });
+    
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete tracking data" }, { status: 500 });
+  }
+}
