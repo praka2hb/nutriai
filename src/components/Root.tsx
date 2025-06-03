@@ -116,7 +116,7 @@ export default function Root() {
             {/* Reverted Button styles */}
           <Button
             size="lg"
-              className="bg-zinc-900 hover:bg-zinc-700 text-white text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 hover:bg-zinc-700 text-white text-lg py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             onClick={signInHandler}
           >
               Start Your Blitz <ArrowRight className="ml-2 h-5 w-5" />

@@ -135,8 +135,8 @@ export default function NutriBot({ hasMealData, userMetadata, hasProfile, userId
               type="submit"
               disabled={!hasProfile || loading || hasMealData}
               className={hasProfile && !hasMealData
-                ? "bg-gradient-to-br hover:shadow-xl from-neutral-800 to-neutral-600 hover:bg-primary/90" 
-                : "bg-gradient-to-br hover:shadow-xl from-neutral-800 to-neutral-600 hover:bg-primary/90 opacity-50"
+                ? "hover:shadow-xl bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 hover:bg-primary/90" 
+                : "hover:shadow-xl bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 hover:bg-primary/90 opacity-50"
               }
             >
               {loading ? "Generating..." : hasMealData ? "Generated" : "Generate Plan"}

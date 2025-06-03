@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 29000); // Abort after ~29 seconds
     
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }, { apiVersion: 'v1' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }, { apiVersion: 'v1' });
 
     // 2. Simplified prompt to reduce response time
     const prompt = `Generate a ${planDuration}-day meal plan for a person with:

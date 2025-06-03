@@ -9,8 +9,8 @@ interface FormSummaryProps {
 // Helper function to render a detail item - for consistency
 const DetailItem = ({ label, value }: { label: string; value: string | number | undefined | null }) => (
   <div>
-    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</p>
-    <p className="text-slate-100 text-sm">{value || "N/A"}</p>
+    <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">{label}</p>
+    <p className="text-gray-900 text-sm font-medium">{value || "N/A"}</p>
   </div>
 );
 
@@ -75,15 +75,15 @@ export function FormSummary({ formData }: FormSummaryProps) {
   }
 
   return (
-    <Card className="bg-slate-800/90 border-slate-700/80 shadow-xl text-slate-200">
-      <CardHeader className="pb-4 border-b border-slate-700/60">
+    <Card className="shadow-xl bg-white border border-gray-200">
+      <CardHeader className="pb-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <Flame className="w-8 h-8 text-orange-400" />
+          <Flame className="w-8 h-8 text-orange-600" />
           <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
               Your FuelBlitz Profile
             </CardTitle>
-            <CardDescription className="text-slate-400 mt-1">
+            <CardDescription className="text-gray-600 mt-1">
               Awesome! Here&apos;s a summary of your high-octane profile.
             </CardDescription>
           </div>
@@ -92,7 +92,7 @@ export function FormSummary({ formData }: FormSummaryProps) {
       <CardContent className="pt-6 px-6 md:px-8">
         <div className="space-y-8">
           <div>
-            <h3 className="flex items-center text-lg font-semibold text-sky-400 mb-3 border-b border-sky-400/30 pb-2">
+            <h3 className="flex items-center text-lg font-semibold text-blue-800 mb-3 border-b border-blue-300 pb-2">
               <User className="w-5 h-5 mr-2" />
               Core Stats
             </h3>
@@ -105,7 +105,7 @@ export function FormSummary({ formData }: FormSummaryProps) {
           </div>
 
           <div>
-            <h3 className="flex items-center text-lg font-semibold text-lime-400 mb-3 border-b border-lime-400/30 pb-2">
+            <h3 className="flex items-center text-lg font-semibold text-green-800 mb-3 border-b border-green-300 pb-2">
               <Zap className="w-5 h-5 mr-2" />
               Mission & Movement
             </h3>
@@ -118,7 +118,7 @@ export function FormSummary({ formData }: FormSummaryProps) {
           </div>
 
           <div>
-            <h3 className="flex items-center text-lg font-semibold text-rose-400 mb-3 border-b border-rose-400/30 pb-2">
+            <h3 className="flex items-center text-lg font-semibold text-purple-800 mb-3 border-b border-purple-300 pb-2">
               <Heart className="w-5 h-5 mr-2" />
               Fueling Strategy
             </h3>
@@ -128,12 +128,12 @@ export function FormSummary({ formData }: FormSummaryProps) {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-700/60 text-center">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-            <p className="text-slate-300 font-medium text-lg">
+          <div className="pt-6 border-t border-gray-200 text-center">
+            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+            <p className="text-gray-800 font-medium text-lg">
               Profile Ready to Blitz!
             </p>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               Your personalized FuelBlitz experience is about to begin.
             </p>
           </div>
@@ -142,4 +142,3 @@ export function FormSummary({ formData }: FormSummaryProps) {
     </Card>
   )
 }
-

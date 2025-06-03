@@ -239,7 +239,7 @@ export default function Profile() {
                   <Button 
                     onClick={handleSubmit} 
                     disabled={loading}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-green-700 via-green-600 to-green-700 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
                   >
                     {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : (hasProfile && isEditing ? "Update Profile" : "Create My FuelBlitz Profile")}
                   </Button>

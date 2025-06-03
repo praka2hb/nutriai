@@ -448,7 +448,7 @@ export default function HomePage() {
                   <p className="text-sm text-neutral-500 mb-4">
                     Create a meal plan to get started with your nutrition journey
                   </p>
-                      <Button onClick={() => setShowNutriBot(true)}>Create Meal Plan</Button>
+                      <Button className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900" onClick={() => setShowNutriBot(true)}>Create Meal Plan</Button>
                 </div>
                   ) : (
                     <NutriBot 

@@ -64,7 +64,7 @@ export default function QuitButtonWithModal({userId}: {userId: string}) {
             <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-start gap-2 mt-4">
-            <Button type="button" className="bg-zinc-700" onClick={() => handleQuit(userId)}>
+            <Button type="button" className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900" onClick={() => handleQuit(userId)}>
               Yes, quit
             </Button>
             <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
